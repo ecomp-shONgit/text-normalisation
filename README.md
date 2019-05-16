@@ -1,12 +1,12 @@
 # Goal of the software
 
-This is a set of JavaScript functions that represent a minimum of text normalisation for the work with latin and polytonic greek digital texts (UTF8). You can realize different levels of text normalisation. There is a documented set of functions to be called on text or tokens (a set of tokens is created by a  .split( " " ) on a string considered to be a space separated text). 
+This is a set of JavaScript functions that represent a minimum of text normalisation for the work with latin and polytonic greek digital texts (UTF8). You can realize different levels of text normalisation. There is a documented set of functions to be called on text or tokens (a set of tokens is created by a  *.split( " " )* on a string considered to be a space separated text). 
 
 # Usage
 
-Include it to your website: <script type="text/javascript" src="textnorm.js"></script>
+Include it to your website: *<script type="text/javascript" src="textnorm.js"></script>*
 
-Or use the example: Download the github repository, unzip it and open textnorm.html, see JavaScript for the demUsage( ) function.
+Or use the example: Download the github repository, unzip it and open textnorm.html, see JavaScript file for the *demUsage( )* function.
 
 Demo: http://www.ecomparatio.net/~khk/textnorm/textnorm.html
 
