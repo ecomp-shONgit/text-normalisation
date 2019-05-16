@@ -4,7 +4,7 @@ This is a set of JavaScript functions that represent a minimum of text normalisa
 
 # Usage
 
-Include it to your website: <script type="text/javascript" src="js/textnorm.js"></script>
+Include it to your website: <script type="text/javascript" src="textnorm.js"></script>
 
 Or use the example: Download the github repository, unzip it and open textnorm.html, see JavaScript for the demUsage( ) function
 
