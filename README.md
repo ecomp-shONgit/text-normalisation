@@ -6,7 +6,8 @@ This is a set of JavaScript functions that represent a minimum of text normalisa
 
 Include it to your website: *<script type="text/javascript" src="textnorm.js"></script>*
 
-Or use the example: Download the github repository, unzip it and open textnorm.html, see JavaScript file for the *demUsage( )* function.
+Or use the example: Download the github repository, unzip it and open textnorm.html, see JavaScript file for the 
+*demUsage( )* function.
 
 Demo: http://www.ecomparatio.net/~khk/textnorm/textnorm.html
 
