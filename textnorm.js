@@ -23,13 +23,51 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 "use strict"; 
 
 //globals
-let doUVlatin = false;
+let doUVlatin = false; //should be var 
+let analysisNormalform = "NFKD";
+let dispnormalform = "NFC";
+
+//**************************************************
+// Section 00 
+// basic UNICODE NORMAL FORM 
+//**************************************************
+function setAnaFormTO( fnew ){
+    analysisNormalform = fnew;
+}
+
+function setDisplFormTO( fnew ){
+    dispnormalform = fnew;
+}
+
+function normarrayk( aarray ){
+	let replacearray = new Object();
+	for( let p in aarray ){
+		replacearray[ disambiguDIAkritika( p.normalize( analysisNormalform ) ) ] = aarray[p];
+	}
+	return replacearray;
+}
+
+function normatext( text, wichnorm ){
+    let spt = text.split( " " )
+    for( let w = 0; w < spt.length; w++ ){
+        let nw = sameuninorm( spt[ w ], wichnorm );
+        spt[ w ] = nw;
+    }
+    return spt.join( " " )
+}
+
+// function takes sting and normalform string (for example "NFD")
+function sameuninorm( aword, wichnorm ){
+    return aword.normalize( wichnorm ) 
+}
 
 //**************************************************
 // Section 0 
 // basic cleaning and string conversion via regexp 
 //**************************************************
 
+let cleanhtmltags = new RegExp( /\<[\w\/]*\>/, 'g' );
+let cleanhtmlformat1 = new RegExp( '&nbsp;', 'g' );
 let regEbr1 = new RegExp( "<br/>", 'g' ); 
 let regEbr2 = new RegExp( "<br>", 'g' );
 let cleanNEWL = new RegExp('\n', 'g');
@@ -53,6 +91,12 @@ let cleanziffbreitergeviert = new RegExp('‒', 'g');
 let cleanhalbgeviert = new RegExp('–', 'g');
 let cleangeviert = new RegExp('—', 'g');
 
+let escspitzeL = new RegExp( '<', 'g' );
+let escspitzeR = new RegExp( '>', 'g' );
+
+function spitzeklammernHTML( astr ){
+    return astr.replace( escspitzeL, '&lt;' ).replace( escspitzeR, '&gt;' );
+}
 
 function basClean( astring ){
     astring = astring.replace(cleanNEWL, " <br/>").replace(cleanRETL, " <br/>").replace(cleanstrangehochpunkt,"·").replace(cleanthisbinde," — ").replace( cleanthisleer, ' ').replace( cleanleerpunkt, '.').replace( cleanleerdoppelpunkt, ':').replace( cleanleerkoma, ',').replace( cleanleersemik, ';').replace( cleanleerausrufe, '!').replace( cleanleerfrege, '?').replace(cleangeviert, '-').replace(cleanhalbgeviert, '-').replace(cleanziffbreitergeviert, '-').replace(cleanviertelgeviert, '-').replace(cleanklgeviert, '-').replace(cleanklbindstrichkurz, '-').replace(cleanklbindstrichvollbreit, '-');
@@ -113,11 +157,6 @@ let diacriticsunicodeRegExp = new Array(
 	new RegExp("\u{0306}", 'g')
 );
 
-// function takes sting and normalform string (for example "NFD")
-function sameuninorm( aword, wichnorm ){
-    return aword.normalize( wichnorm ) 
-}
-
 // function takes string, splits it with jota subscriptum and joins the string again using jota adscriptum
 let regJotaSub = new RegExp('\u{0345}', 'g');
 function iotasubiotoad( aword ){
@@ -141,19 +180,11 @@ let strClean1 = new RegExp('’', 'g');
 let strClean2 = new RegExp('\'', 'g');
 let strClean3 = new RegExp('᾽', 'g');
 let strClean4 = new RegExp('´', 'g');
+
 // function takes a string replaces some signs with regexp and oth
 function nodiakinword( aword ){
-    let spt = ((aword.replace(strClean1, "").replace(strClean2, "").replace(strClean3, "").replace(strClean4, "")).normalize( 'NFD' ));
+    let spt = ((aword.replace(strClean1, "").replace(strClean2, "").replace(strClean3, "").replace(strClean4, "")).normalize( analysisNormalform ));
     return iotasubiotoad( ohnediakritW( spt ) );
-}
-
-function normatext( text, wichnorm ){
-    let spt = text.split( " " )
-    for( let w = 0; w < spt.length; w++ ){
-        let nw = sameuninorm( spt[ w ], wichnorm );
-        spt[ w ] = nw;
-    }
-    return spt.join( " " )
 }
 
 //**************************************************
@@ -268,7 +299,7 @@ function demUsage( ){
     console.log( atesttext );
     atttext = atttext + "<br/>"+ str1+"<br/>"+ atesttext;
 
-    let basicres = normatext( basClean( atesttext ), 'NFD' );   
+    let basicres = normatext( basClean( atesttext ), analysisNormalform );   
     let str2 = "<b>a) Text output basic norm:</b>";
     console.log( str2 );
     console.log( basicres );
