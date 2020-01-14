@@ -23,14 +23,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 "use strict"; 
 
 //globals
-let doUVlatin = false; //should be var 
+let doUVlatin = false; 
 let analysisNormalform = "NFKD";
 let dispnormalform = "NFC";
 
+//helper
+function len( ast ){
+    return ast.length;
+}
+
 //**************************************************
 // Section 00 
-// basic UNICODE NORMAL FORM 
+// basic UNICODE NORMAL FORM / TRANSLITERATION
 //**************************************************
+function disambiguDIAkritika( astr ){
+    astr = astr.split( "\u0027" ).join("\u2019"); //typogra korrektes postroph;
+    astr = astr.split( "'" ).join("\u2019");
+    astr = astr.split( "\u1FBD" ).join("\u2019");
+    return astr;
+}
+
 function setAnaFormTO( fnew ){
     analysisNormalform = fnew;
 }
@@ -59,6 +71,106 @@ function normatext( text, wichnorm ){
 // function takes sting and normalform string (for example "NFD")
 function sameuninorm( aword, wichnorm ){
     return aword.normalize( wichnorm ) 
+}
+
+let buchstGRI = {"Α":"A", "α":"a", "Β":"B", "β":"b", "Γ":"G", "γ":"g", "Δ":"D", "δ":"d", "Ε":"E", "ε":"e", "Ζ":"Z", "ζ":"z", "Η":"H", "η":"h", "Θ":"Th", "θ":"th", "Ι":"I", "ι":"i", "Κ": "K", "κ":"k", "Λ":"L", "λ":"l", "Μ":"M", "μ":"m", "Ν":"N", "ν":"n", "Ξ":"Xi", "ξ":"xi", "Ο":"O", "ο":"o", "Π":"P", "π":"p", "Ρ":"R", "ρ":"r", "Σ":"S", "σ":"s", "ς":"s", "Τ":"T", "τ":"t", "Υ":"U", "υ":"u", "Φ":"Ph", "φ":"ph", "Χ":"X", "χ":"x", "Ψ":"Ps", "ψ":"ps", "Ω":"O", "ω":"o"}//unvollständig!!!!ἀρχῆς
+let groups = {"γγ":["n", "g"], "γκ":["n", "c"], "γξ":["n","x"], "γχ":["n", "ch"], "ηυ":["ē", "u"]}; //only great letters??????? what is with that?
+let behauchung = { "῾":"h" };
+let buchsCoptic = {"ϐ": "B", "ϑ":"Th", "ϱ":"r", "ϰ":"k", "ϒ":"y", "ϕ":"ph", "ϖ":"p", "Ϝ":"W", "ϝ":"w", "Ϙ":"Q","ϙ":"q", "Ϟ":"ḳ", "ϟ":"ḳ", "Ϲ":"S", "Ⲥ":"S", "ⲥ":"s", "ϲ":"s", "Ͻ":"S", "ͻ":"s","Ϳ ":"j","ϳ":"j","Ͱ":"h","ͱ":"h","Ⲁ":"A","ⲁ":"a", 
+"ϴ":"t","Ⲑ":"t","ⲑ":"t","ϵ":"e","϶":"e","Ϸ":"Sh","ϸ":"sh", "ϼ":"P","Ϡ":"S","ϡ":"S","Ⳁ":"S","ⳁ":"s",
+"Ͳ":"Ss", "ͳ":"ss", "Ϻ":"S","ϻ":"s", "Ϣ":"š","ϣ":"š", "Ϥ":"F","ϥ":"f", "Ϧ":"X", "Ⳉ":"X",
+"ϧ":"x","ⳉ":"x", "Ϩ":"H", "ϩ":"h", "Ϫ":"J", "ϫ":"j", "Ϭ":"C","ϭ":"c","Ϯ":"Di","ϯ":"di", 
+"Ͼ":"S", "Ͽ":"S", "ͼ":"s", "ͽ":"s", "Ⲃ":"B","ⲃ":"b","Ⲅ":"G","ⲅ":"g", "Ⲇ":"D", "ⲇ":"d", "Ⲉ":"E", "ⲉ":"e", 
+"Ⲋ":"St", "ⲋ":"st", "Ⲍ":"Z", "ⲍ":"z", "Ⲏ":"ê", "ⲏ":"ê", "Ⲓ":"I", "ⲓ":"i", "Ⲕ":"K", "ⲕ":"k", 
+"Ⲗ":"L", "ⲗ":"l", "Ⲙ":"M", "ⲙ":"m", "Ⲛ":"N","ⲛ":"n", "Ⲝ":"ks", "ⲝ":"ks", "Ⲟ	":"O", "ⲟ":"o", 
+"Ⲡ":"B", "ⲡ":"b", "Ⲣ":"R","ⲣ":"r", "Ⲧ":"T", "ⲧ":"t", "Ⲩ":"U", "ⲩ":"u", "Ⲫ":"F","ⲫ":"f","Ⲭ":"Kh", "ⲭ":"kh",
+"Ⲯ":"Ps", "ⲯ":"ps", "Ⲱ":"ô", "ⲱ":"ô", "Ͷ":"W", "ͷ":"w"}; // 
+
+function ExtractDiafromBuchst( buchst ){
+    let toitter = buchst.normalize( "NFKD" ).split( "" );
+    let b = [];
+    let d = [];
+    for( let t in toitter ){
+        let co =  toitter[t].toLowerCase( );
+        if( buchstGRI[ co ] || buchsCoptic[ co ]){
+            b.push( toitter[t] );
+        } else {
+            d.push( toitter[t] );
+        }
+    }
+    return [d.join(""), b.join("")];
+}
+
+function replaceBehauchung( adiakstring ){
+    if( adiakstring.indexOf( "῾" ) !== -1 ){
+        return "h"+adiakstring.replace( "῾","" );
+    } else {
+        return adiakstring;
+    }
+}
+
+
+function TraslitAncientGreekLatin( astring ){
+    //if( notgreek ){
+    //    return astring;
+    //}
+    console.log(astring);
+    let wordlevel = delligaturen( iotasubiotoad( astring.trim().normalize( "NFD" ) ).normalize( "NFC" ) ).split(" "); //care for iotasubscriptum, Ligature
+    //console.log(wordlevel);
+    let romanized = [];
+    for( let w in wordlevel ){
+        
+        let buchstlevel = wordlevel[ w ].split("");
+        console.log(buchstlevel);
+        let grouped = [];
+        let notlastdone = true;
+        let extractedida2 = "";
+        let extracteBUCHST2 = "";
+        for( let b = 1; b < len( buchstlevel ); b+=1 ){
+            if( buchstlevel[ b-1 ] === "" ){
+                continue;
+            }
+            let zwischenerg1 = ExtractDiafromBuchst( buchstlevel[ b-1 ] );
+            let zwischenerg2 = ExtractDiafromBuchst( buchstlevel[ b ] );
+            let extractedida1 = zwischenerg1[0];
+                extractedida2 = zwischenerg2[0];
+            let extracteBUCHST1 = zwischenerg1[1];
+                extracteBUCHST2 = zwischenerg2[1];
+            //console.log(zwischenerg1, zwischenerg2);
+            if( groups[extracteBUCHST1+extracteBUCHST2] && extractedida2.indexOf( "¨" ) === -1 ){ //wenn ein trema über dem zweiten buchstaben - diaresis keine Zusammenziehung (synresis)
+                let gou = groups[ extracteBUCHST1+extracteBUCHST2 ];
+                grouped.push( (gou[0]+replaceBehauchung(extractedida1)+gou[1]+replaceBehauchung(extractedida2)).normalize( "NFC" ) );
+                buchstlevel[ b ] = "";//delet alread in groupand revistible
+                notlastdone = false;
+            } else {
+                if( buchstGRI[extracteBUCHST1] ){
+                    grouped.push( (buchstGRI[extracteBUCHST1]+replaceBehauchung(extractedida1)).normalize( "NFC" ) );
+                } else {
+                    if( buchsCoptic[extracteBUCHST1] ){
+                        grouped.push( (buchsCoptic[extracteBUCHST1]+replaceBehauchung(extractedida1)).normalize( "NFC" ) );
+                    } else {
+                        //realy not - leave IT
+                        grouped.push( buchstlevel[ b-1 ] );
+                    }
+                }
+                notlastdone = true;
+            }
+        }
+        if( notlastdone ){
+            if( buchstGRI[extracteBUCHST2] ){
+                    grouped.push( (buchstGRI[extracteBUCHST2]+replaceBehauchung(extractedida2)).normalize( "NFC" ) );
+                } else {
+                    if( buchsCoptic[extracteBUCHST2] ){
+                        grouped.push( (buchsCoptic[extracteBUCHST2]+replaceBehauchung(extractedida2)).normalize( "NFC" ) );
+                    } else {
+                        //realy not - leave IT
+                        grouped.push( buchstlevel[ buchstlevel.length-1 ] );
+                    }
+                }
+        }
+        romanized.push( grouped.join("") );
+    }
+    return romanized.join( " " );  
 }
 
 //**************************************************
@@ -204,15 +316,18 @@ function delall( text ){
 // precompiled regular expressions of the relevant ligatures 
 let regEstigma = new RegExp( '\u{03DA}', 'g' ); 
 let regEstigmakl = new RegExp( '\u{03DB}', 'g' );
-let regEomikonyplsi = new RegExp( 'Ȣ', 'g' );
-let regEomikonyplsiK = new RegExp( 'ꙋ', 'g' );
+let regEomikonyplsi = new RegExp( 'ȣ', 'g' );
+let regEomikonyplsiK = new RegExp( 'Ȣ', 'g' );
+let regEUk = new RegExp( 'Ꙋ', 'g' );
+let regEuk = new RegExp( 'ꙋ', 'g' );
 let regEkai = new RegExp( 'ϗ', 'g' );
+let regEKai = new RegExp( 'Ϗ', 'g' );
 let regEl1 = new RegExp( '\u{0223}', 'g' );
 let regEl2 = new RegExp( '\u{0222}', 'g' );
 let regEl3 = new RegExp( '\u{03DB}', 'g' );
 // function take a string and replaces all occorences of a regular expression
 function delligaturen( text ){
-    return text.replace( regEstigma, "στ").replace( regEstigmakl, "στ").replace(regEomikonyplsi, "ου").replace(regEomikonyplsiK, "ου").replace(regEkai, "καὶ").replace(regEl1, "\u039F\u03C5" ).replace(regEl2, "\u03BF\u03C5" ).replace( regEl3, "\u03C3\u03C4" );
+    return text.replace( regEstigma, "στ").replace( regEstigmakl, "στ").replace( regEUk, "Υκ").replace( regEuk, "υκ").replace(regEomikonyplsi, "ου").replace(regEomikonyplsiK, "ου").replace(regEkai, "καὶ").replace(regEKai, "Καὶ").replace(regEl1, "\u039F\u03C5" ).replace(regEl2, "\u03BF\u03C5" ).replace( regEl3, "\u03C3\u03C4" );
 }
 
 // function takes string and splits it into words, than normalizes each word, joins the string again
@@ -244,6 +359,11 @@ function delinterp( text ){
 // function takes string and replace html line breakes
 function delumbrbine( text ){
     return text.replace(regEbr1, "").replace(regEbr2, "");
+}
+
+//more to come
+function delmakup( text ){
+    return text.replace(cleanhtmltags, "").replace(cleanhtmlformat1, "");
 }
 
 // ...
@@ -288,7 +408,7 @@ function demUsage( ){
     let atesttext = "ἀλλ’ ἑτέραν τινὰ φύσιν ἄπειρον, ἐξ ἧς ἅπαντας γίνεσθαι τοὺς οὐρανοὺς καὶ τοὺς ἐν αὐτοῖς κόσμους· ἐξ ὧν δὲ ἡ γένεσίς ἐστι τοῖς οὖσι, καὶ τὴν φθορὰν εἰς ταῦτα γίνεσθαι κατὰ τὸ χρεών. διδόναι γὰρ αὐτὰ δίκην καὶ τίσιν ἀλλήλοις τῆς ἀδικίας κατὰ τὴν τοῦ χρόνου τάξιν, ποιητικωτέροις οὕτως ὀνόμασιν αὐτὰ λέγων· δῆλον δὲ ὅτι τὴν εἰς ἄλληλα μεταβολὴν τῶν τεττάρων στοιχείων οὗτος θεασάμενος οὐκ ἠξίωσεν ἕν τι τούτων ὑποκείμενον ποιῆσαι, ἀλλά τι ἄλλο παρὰ ταῦτα. οὗτος δὲ οὐκ ἀλλοιουμένου τοῦ στοιχείου τὴν γένεσιν ποιεῖ, ἀλλ’ ἀποκρινομένων τῶν ἐναντίων διὰ τῆς ἀιδίου κινή- σεως·" 
  +" 1 Summá pecúniae, quam dedit in aerarium vel plebei Romanae vel dimissis militibus: denarium sexiens milliens.  "
  +"2 Opera fecit nova § aedem Martis, Iovis Tonantis et Feretri, Apollinis, díví Iúli, § Quirini, § Minervae, Iunonis Reginae, Iovis Libertatis, Larum, deum Penátium, § Iuventatis, Matris deum, Lupercal, pulvinar ad [11] circum, § cúriam cum chalcidico, forum Augustum, basilicam 35 Iuliam, theatrum Marcelli, § porticus . . . . . . . . . . , nemus trans Tiberím Caesarum. §  "
- +"3 Refécit Capitolium sacrasque aedes numero octoginta duas, theatrum Pompeí, aquarum rivos, viam Flaminiam.  ";
+ +"3 Refécit Capitolium sacrasque aedes numero octoginta duas, theatrum Pompeí, aquarum rivos, viam Flaminiam.  Ϗ ϗ ϚϛȢȣꙊꙋἀἁἂἃἄἅἆἇἈἉἊἋἌἍἎἏἐἑἒἓἔἕἘἙἚἛἜἝἠἡἢἣἤἥἦἧἨἩἪἫἬἭἮἯἰἱἲἳἴἵἶἷἸἹἺἻἼἽἾἿὀὁὂὃὄὅὈὉὊὋὌὍὐὑὒὓὔὕὖὗὙὛὝὟὠὡὢὣὤὥὦὧὨὩὪὫὬὭὮὯὰάὲέὴήὶίὸόὺύὼώ	ᾀᾁᾂᾃᾄᾅᾆᾇᾈᾉᾊᾋᾌᾍᾎᾏᾐᾑᾒᾓᾔᾕᾖᾗᾘᾙᾚᾛᾜᾝᾞᾟᾠᾡᾢᾣᾤᾥᾦᾧᾨᾩᾪᾫᾬᾭᾮᾯᾰᾱᾲᾳᾴᾶᾷᾸᾹᾺΆᾼ᾽ι᾿῀῁ῂῃῄῆῇῈΈῊΉῌ῍῎῏ῐῑῒΐῖῗῘῙῚΊ῝῞῟ῠῡῢΰῤῥῦῧῨῩῪΎῬ῭΅`ῲῳῴῶῷῸΌῺΏῼ´῾ͰͱͲͳʹ͵Ͷͷͺͻͼͽ;Ϳ΄΅Ά·ΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϏϐϑϒϓϔϕϖϗϘϙϚϛϜϝϞϟϠϡϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰϱϲϳϴϵ϶ϷϸϹϺϻϼϽϾϿ Αι αι γγ γκ γξ γχ ου Υι υι ἄϋλος αὐλός";
 
     let atttext = "";
 
@@ -358,6 +478,12 @@ function demUsage( ){
     console.log( str11 );
     console.log( alldelled );   
     atttext = atttext + "<br/>"+ str11+"<br/>"+ alldelled;
+
+    let translitbsp = TraslitAncientGreekLatin( basicres );
+    let str12 = "<b>k) Text transliteration:</b>";
+    console.log( str12 );
+    console.log( translitbsp );   
+    atttext = atttext + "<br/>"+ str12+"<br/>"+ translitbsp;
 
     document.body.innerHTML = atttext;
 }
