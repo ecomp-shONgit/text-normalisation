@@ -1,6 +1,6 @@
 # Goal of the software
 
-This is a set of JavaScript functions that represent a minimum of text normalisation for the work with latin and polytonic greek digital texts (UTF8). You can realize different levels of text normalisation. There is a documented set of functions to be called on text or tokens (a set of tokens is created by a  *.split( " " )* on a string considered to be a space separated text). 
+This is a set of JavaScript/Python3 functions that represent a minimum of text normalisation (aka cleaning) for the work with latin and polytonic greek digital texts (UTF8). You can realize different levels of text normalisation. There is a documented set of functions to be called on text or tokens (a set of tokens is created by a  *.split( " " )* on a string considered to be a space separated text). 
 
 # Usage
 
