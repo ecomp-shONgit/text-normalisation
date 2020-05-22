@@ -1,6 +1,6 @@
 //******************************************************************************
 //
-// 2020 text normalization JavaScript Lib, 
+// 2020 text normalisation JavaScript Lib, 
 // Prof. Charlotte Schubert Alte Geschichte, Leipzig
 //
 //******************************************************************************
@@ -11,7 +11,7 @@ and composition of a sequence of signs called a text. There are two goals of
 normalization. The first is a common ground of signs  and the second is a 
 reduction of differences between two sequences of signs.  Not every 
 normalization step is useful for every comparison task! Remember: 
-Sometimes it is important to not equalize wordforms and 
+Sometimes it is important to not equalize word forms and 
 sometimes it is important. 
 */
 
@@ -42,8 +42,9 @@ const analysisNormalform = "NFKD";
 const dispnormalform = "NFC";
 
 let buchstGRI = {"Α":"A", "α":"a", "Β":"B", "β":"b", "Γ":"G", "γ":"g", "Δ":"D", "δ":"d", "Ε":"E", "ε":"e", "Ζ":"Z", "ζ":"z", "Η":"H", "η":"h", "Θ":"Th", "θ":"th", "Ι":"I", "ι":"i", "Κ": "K", "κ":"k", "Λ":"L", "λ":"l", "Μ":"M", "μ":"m", "Ν":"N", "ν":"n", "Ξ":"Xi", "ξ":"xi", "Ο":"O", "ο":"o", "Π":"P", "π":"p", "Ρ":"R", "ρ":"r", "Σ":"S", "σ":"s", "ς":"s", "Τ":"T", "τ":"t", "Υ":"U", "υ":"u", "Φ":"Ph", "φ":"ph", "Χ":"X", "χ":"x", "Ψ":"Ps", "ψ":"ps", "Ω":"O", "ω":"o"}
-const groups = {"γγ":["n", "g"], "γκ":["n", "c"], "γξ":["n","x"], "γχ":["n", "ch"], "ηυ":["ē", "u"]}; //only great letters??????? what is with that?
-const behauchung = { "῾":"h" }; //missing other Hauch???
+let LAGRI = {"A":"Α", "a":"α", "B":"Β", "b":"β", "G":"Γ", "g":"γ", "D":"Δ", "d":"δ", "E":"Ε", "e":"ε", "Z":"Ζ", "z":"ζ", "H":"Η", "h":"η", "Th":"Θ", "th":"θ", "I":"Ι", "i":"ι", "K":"Κ", "k":"κ","C":"Κ", "c":"κ", "Q":"Κ", "q":"κ", "L":"Λ", "l":"λ", "M":"Μ", "m":"μ", "N":"Ν", "n":"ν", "Xi":"Ξ", "xi":"ξ", "O":"Ο", "o":"ο", "P":"Π", "p":"π", "R":"Ρ", "r":"ρ", "S":"Σ", "s":"σ", "s":"ς", "T":"Τ", "t":"τ", "U":"Υ", "u":"υ", "Ph":"Φ", "ph":"φ", "F":"Φ", "f":"φ", "V":"Φ", "v":"φ", "X":"Χ", "x":"χ", "Ps":"Ψ", "ps":"ψ", "O":"Ω", "o":"ω"}
+const groups = {"γγ":["n", "g"], "γκ":["n", "c"], "γξ":["n","x"], "γχ":["n", "ch"], "ηυ":["ē", "u"]}; //only small letters?
+const behauchung = { "῾":"h" }; //missing other Hauch?
 const buchsCoptic = {"ϐ": "B", "ϑ":"Th", "ϱ":"r", "ϰ":"k", "ϒ":"y", "ϕ":"ph", "ϖ":"p", "Ϝ":"W", "ϝ":"w", "Ϙ":"Q","ϙ":"q", "Ϟ":"ḳ", "ϟ":"ḳ", "Ϲ":"S", "Ⲥ":"S", "ⲥ":"s", "ϲ":"s", "Ͻ":"S", "ͻ":"s","Ϳ ":"j","ϳ":"j","Ͱ":"h","ͱ":"h","Ⲁ":"A","ⲁ":"a", 
 "ϴ":"t","Ⲑ":"t","ⲑ":"t","ϵ":"e","϶":"e","Ϸ":"Sh","ϸ":"sh", "ϼ":"P","Ϡ":"S","ϡ":"S","Ⳁ":"S","ⳁ":"s",
 "Ͳ":"Ss", "ͳ":"ss", "Ϻ":"S","ϻ":"s", "Ϣ":"š","ϣ":"š", "Ϥ":"F","ϥ":"f", "Ϧ":"X", "Ⳉ":"X",
@@ -293,6 +294,49 @@ function ExpandelisionText( atext ){
         t += " "+ Expandelision(  wds[ w ] );
     }
     return t;
+}
+
+function TranslitLatinGreekLetters( astring ){
+
+    //
+    let wordlevel = delligaturen( astring.trim().normalize( "NFC" ) ).split(" ");
+    let greekenized = [ ];
+    for( let w in wordlevel ){
+        let buchstlevel = Expandelision( wordlevel[ w ] ).split("");
+        const lele = len( buchstlevel );
+        let perword = [];
+        let extractedida2 = "";
+        let extracteBUCHST2 = "";
+        for( let b = 1; b < lele; b+=1 ){
+            
+            let zwischenerg1 = ExtractDiafromBuchst( buchstlevel[ b-1 ] );
+            let zwischenerg2 = ExtractDiafromBuchst( buchstlevel[ b ] );
+            //console.log(zwischenerg1, zwischenerg2);
+            let extractedida1 = zwischenerg1[0];
+                extractedida2 = zwischenerg2[0];
+            let extracteBUCHST1 = zwischenerg1[1];
+                extracteBUCHST2 = zwischenerg2[1];
+            //console.log("o1", buchstlevel[ b-1 ], "o2", buchstlevel[ b ], "e1", extracteBUCHST1, "d1", extractedida1, "e2", extracteBUCHST2, "d2", extractedida2);
+            if( LAGRI[ extracteBUCHST1+extracteBUCHST2 ] && extracteBUCHST1 !== "" && extracteBUCHST2 !== "" ){
+                perword.push( LAGRI[ extracteBUCHST1+extracteBUCHST2 ]+extractedida1+extractedida2 );
+            } else {
+                if( LAGRI[extracteBUCHST1] ){
+                    perword.push( LAGRI[ extracteBUCHST1 ]+extractedida1 );
+                } else {
+                    perword.push( buchstlevel[ b-1 ] );
+                }
+            }
+        }
+        if( LAGRI[ extracteBUCHST2 ] ){
+            
+            perword.push( LAGRI[ extracteBUCHST2 ]+extractedida2 );
+        } else {
+            perword.push( buchstlevel[ lele-1 ] );
+        }
+        greekenized.push( perword.join( "" ) );
+    }
+    //return astring;
+    return greekenized.join( " " );
 }
 
 function TraslitAncientGreekLatin( astring ){
@@ -667,7 +711,7 @@ function GRvorbereitungT( dtext ){
 } 
 
 //******************************************************************************
-// Section 3: edition klammerung
+// Section 3: edition klammerung --- THIS HAS MOVED TO INDEX PROJECT
 //******************************************************************************
 function hervKLAMMSYS( stringtomani ){ //RUN ON NFC/NFKC
     let matches = stringtomani.match( lueckeBestimmt );
@@ -735,10 +779,17 @@ function demUsage( atesttext ){
     atttext = atttext + "<br/><br/>"+ str2+"<br/>"+ basicres;
 
     let translitbsp = TraslitAncientGreekLatin( basicres );
-    let str12 = "<b>d) Text transliteration (takes greek utf8 string and returns transliterated latin utf8 string):</b>";
+    let str12 = "<b>d) Text transliteration (gr-la) (takes greek utf8 string and returns transliterated latin utf8 string):</b>";
     //console.log( translitbsp );
     //console.log( str12 );   
     atttext = atttext + "<br/><br/>"+ str12+"<br/>"+ translitbsp; 
+
+    
+    let translitLAGR = TranslitLatinGreekLetters( basicres );
+    let str12x = "<b>d2) Text transliteration (la-gr) (takes latin utf8 string and returns transliterated greek utf8 string):</b>";
+    //console.log( translitbsp );
+    //console.log( str12 );   
+    atttext = atttext + "<br/><br/>"+ str12x+"<br/>"+ translitLAGR; 
 
     let expeli = ExpandelisionText( testnorm );
     let desexpeli = "<b>e) Elusion expansion (given a text, if this is an elusion it will be expanded):</b>";
@@ -900,6 +951,8 @@ Expandelision( aword ) // given a word, if this is an elusion it will be expande
 
 TraslitAncientGreekLatin( astring ) // takes greek utf8 string and returns transliterated latin utf8 string
 
+TranslitLatinGreekLetters( astring ) // takes latin utf8 string and returns transliterated greek utf8 string
+
 spitzeklammernHTML // ascapes spitze klammern to html encoding
 
 basClean( astring ) // basic equalisation and hypenation reversal
@@ -950,6 +1003,6 @@ iotasubiotoadL( wordlist ) // same as iotasubiotoad but on array of words
 
 GRvorbereitungT( text ) // input a string and get a combination of diakritica disambiguation, normalization, hyphenation removal, linebreak to space, interpunktion separation and klammern removal
 
-hervKLAMMSYS( text ) // input a string, mark all editorial signs
+
 */
 //eof
