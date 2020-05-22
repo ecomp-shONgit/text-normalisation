@@ -76,6 +76,10 @@ Given a word, if this is an *Elusion* it will be expanded.
 
 Takes Greek UTF8 string and returns transliterated Latin UTF8 string.
 
+## TranslitLatinGreekLetters( astring )
+
+Takes Latin UTF8 string and returns transliterated Greek UTF8 string.
+
 ## spitzeklammernHTML
 
 Escapes arrow brackets to HTML encoding.
@@ -176,9 +180,6 @@ Same as iotasubiotoad but on array of words.
 
 Input a string and get a combination of diacritic disambiguation, normalization, hyphenation removal, line break to space, punctuation separation and bracket removal
 
-## hervKLAMMSYS( text )
-
-Input a string, mark all *signis criticis*.
 
 =======
 For the purpose of text analysis it is suitable to use the NF(K)D and for the purpose display the NF(K)C is better (typography).
