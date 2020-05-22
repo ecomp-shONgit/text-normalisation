@@ -76,6 +76,10 @@ Given a word, if this is an *Elusion* it will be expanded.
 
 Takes Greek UTF8 string and returns transliterated Latin UTF8 string.
 
+## TranslitLatinGreekLetters( astring )
+
+Takes Latin UTF8 string and returns transliterated Greek UTF8 string.
+
 ## spitzeklammernHTML
 
 Escapes arrow brackets to HTML encoding.
