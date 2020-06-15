@@ -13,20 +13,15 @@ reduction of differences between two sequences of signs.  Not every
 normalization step is useful for every comparison task! Remember: 
 Sometimes it is important to not equalize word forms and 
 sometimes it is important. 
-
-
 GPLv3 copyrigth
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
-
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http:#www.gnu.org/licenses/>.
 '''
@@ -83,22 +78,22 @@ def setDisplFormTO( fnew ):
 def normarrayk( aarray ):
 	replacearray = {};
 	for p in aarray:
-		replacearray[ disambiguDIAkritika( unicodedata.normaliz( p, analysisNormalform ) ) ] = aarray[ p ];
+		replacearray[ disambiguDIAkritika( unicodedata.normalize( analysisNormalform, p ) ) ] = aarray[ p ];
 	return replacearray;
 
-def normatextwordbyword( text, wichnorm ):
-    spt = text.split( " " )
-    lele = len( spt )
-    for w in range( lele ):
-        nw = normatext( spt[ w ], wichnorm )
-        spt[ w ] = nw
-    return " ".join( spt )
+#def normatextwordbyword( text, wichnorm ):
+#    spt = text.split( " " )
+#    lele = len( spt )
+#    for w in range( lele ):
+#        nw = normatext( spt[ w ], wichnorm )
+#        spt[ w ] = nw
+#    return " ".join( spt )
 
 
 def normatext( text, wichnorm ):
     spt = text.split( " " )
     for w in range( len( spt ) ):
-        nw = sameuninorm( spt[ w ], wichnorm );
+        nw = sameuninorm( spt[ w ], wichnorm )
         spt[ w ] = nw;
     return " ".join( spt )
 
@@ -121,11 +116,28 @@ buchsCoptic = {"ϐ": "B", "ϑ":"Th", "ϱ":"r", "ϰ":"k", "ϒ":"y", "ϕ":"ph", "�
 "Ⲡ":"B", "ⲡ":"b", "Ⲣ":"R","ⲣ":"r", "Ⲧ":"T", "ⲧ":"t", "Ⲩ":"U", "ⲩ":"u", "Ⲫ":"F","ⲫ":"f","Ⲭ":"Kh", "ⲭ":"kh",
 "Ⲯ":"Ps", "ⲯ":"ps", "Ⲱ":"ô", "ⲱ":"ô", "Ͷ":"W", "ͷ":"w"}; # 
 
+spai1 = re.compile( "\u2002".encode("utf-8").decode("utf-8") );#enspacing
+spai2 = re.compile( "\u2000".encode("utf-8").decode("utf-8") );#enquad
+def sameallspacing( astr ):
+    astr = re.sub( spai1, ' ', astr)
+    astr = re.sub( spai2, ' ', astr)
+    return astr
+
 def disambiguDIAkritika( astr ):
     astr = "\u2019".join( astr.split( "\u0027" ) ) #typogra korrektes postroph;
     astr = "\u2019".join( astr.split( "'" ) )
     astr = "\u2019".join( astr.split( "\u1FBD" ) )
     return astr
+
+def disambiguadashes( astring ):
+    astring = re.sub( cleangeviert, '-', astring)
+    astring = re.sub( cleanhalbgeviert, '-', astring)
+    astring = re.sub( cleanziffbreitergeviert, '-', astring)
+    astring = re.sub( cleanviertelgeviert, '-', astring)
+    astring = re.sub( cleanklgeviert, '-', astring)
+    astring = re.sub( cleanklbindstrichkurz, '-', astring)
+    astring = re.sub( cleanklbindstrichvollbreit, '-', astring)
+    return astring
 
 def ExtractDiafromBuchst( buchst ):
     toitter = list( unicodedata.normalize( "NFKD", buchst ) );
@@ -266,13 +278,7 @@ def basClean( astring ):
     astring = re.sub( cleanleersemik, ';', astring)
     astring = re.sub( cleanleerausrufe, '!', astring)
     astring = re.sub( cleanleerfrege, '?', astring)
-    astring = re.sub( cleangeviert, '-', astring)
-    astring = re.sub( cleanhalbgeviert, '-', astring)
-    astring = re.sub( cleanziffbreitergeviert, '-', astring)
-    astring = re.sub( cleanviertelgeviert, '-', astring)
-    astring = re.sub( cleanklgeviert, '-', astring)
-    astring = re.sub( cleanklbindstrichkurz, '-', astring)
-    astring = re.sub( cleanklbindstrichvollbreit, '-', astring)
+    astring = disambiguadashes( astring )
 
     # remove hyphens
     ws = astring.split(" ");
@@ -302,6 +308,7 @@ def basClean( astring ):
                 ca.append( ws[w] );
     return " ".join( ca );
 
+
 def ohnesatzzeichen( wliste ):
     lsatzz = len( satzzeichen )
     lwdl = len( wliste )
@@ -310,7 +317,18 @@ def ohnesatzzeichen( wliste ):
             wliste[ w ] = "".join( wliste[ w ].split( satzzeichen[ sa ]))
     return wliste;
 
+def replaceOPENINGandCLOSING( astopen, astclose, strstr):
+    no = strstr.split( astclose )
+    NO = ""
+    for n in no:
+        NO += n.split( astopen )[0]
+    return NO
 
+#usage: replaceWordsfromarray( ["in", "cum", "et", "a", "ut"], stringggg )
+def replaceWordsfromarray( arr, replacement,strstr ):
+    for a in arr:
+        strstr = strstr.replace( arr[a], replacement )
+    return strstr
 
 #**************************************************
 # Section 0
@@ -423,11 +441,14 @@ def delall( text ):
     return text
 
 #del numbering
-numeringReg1 = re.compile( r'\[[0-9]+\]' )
+numeringReg1 = re.compile( r'\[([0-9\.\:\; ]+)\]' )
 numeringReg2 = re.compile( r'\[[M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})]+\]' )
+numeringReg3 = re.compile( r'\(([A-Za-z0-9\.\:\; ]+|([0-9\.\:\; ]+))\)' ) #runde klammern mit zahlen und buchstaben
+     
 def delnumbering( text ): #untested
     text = re.sub( numeringReg1, "", text)
     text = re.sub( numeringReg2, "", text)
+    text = re.sub( numeringReg3, "", text)
     return text
 
 
@@ -477,6 +498,7 @@ regEan5 = re.compile( r'„' )
 regEan2 = re.compile( r'”' )
 regEan3 = re.compile( r'"' )
 regEan4 = re.compile( r"'" )
+regpipe = re.compile( r"|" )
 # def takes a string and replaces interpunction
 def delinterp( text ):
     text = re.sub(regEdoppelP, "", text)
@@ -491,11 +513,12 @@ def delinterp( text ):
     text = re.sub(regEan3, "", text)
     text = re.sub(regEan4, "", text)
     text = re.sub(regEan5, "", text)
+    text = re.sub(regpipe, "", text)
     return text
 
 # function takes a string and replaces some unknown signs
 regU1 = re.compile( r"†" )
-regU2 = re.compile( r"\\*" )
+regU2 = re.compile( r"\*" )
 regU3 = re.compile( r"⋖" )
 regU4 = re.compile( r"#" ) 
 def delunknown( text ):
@@ -508,7 +531,14 @@ def delunknown( text ):
 # def takes string and replace html line breakes
 def delumbrbine( text ):
     text = re.sub(regEbr1, "", text)
-    text = re.sub(regEbr2, "", text);
+    text = re.sub(regEbr2, "", text)
+    return text
+
+def umbrtospace( text ):
+    text = re.sub(cleanNEWL, " ", text)
+    text = re.sub(cleanRETL, " ", text)
+    text = re.sub(regEbr1, " ", text)
+    text = re.sub(regEbr2, " ", text);
     return text
 
 # first version, a little more...
@@ -541,6 +571,13 @@ regEkla13 = re.compile( r"«" )
 regEkla14 = re.compile( r"»" )
 regEkla15 = re.compile( r"⟦" )
 regEkla16 = re.compile( r"⟧" )
+regEkla17 = re.compile( '\u3008'.encode("utf-8").decode("utf-8") )
+regEkla18 = re.compile( '\u3009'.encode("utf-8").decode("utf-8") )
+regEkla19 = re.compile( '\u2329'.encode("utf-8").decode("utf-8") )
+regEkla20 = re.compile( '\u232A'.encode("utf-8").decode("utf-8") )
+regEkla21 = re.compile( '\u27E8'.encode("utf-8").decode("utf-8") )
+regEkla22 = re.compile( '\u27E9'.encode("utf-8").decode("utf-8") )
+
 # def take sstring and replaces the brakets
 
 def delklammern( text ):
@@ -559,7 +596,36 @@ def delklammern( text ):
     text = re.sub(regEkla13,"",text)
     text = re.sub(regEkla14,"",text)
     text = re.sub(regEkla15,"",text)
-    text = re.sub(regEkla16,"",text);
+    text = re.sub(regEkla16,"",text)
+    text = re.sub(regEkla17,"",text)
+    text = re.sub(regEkla18,"",text)
+    text = re.sub(regEkla19,"",text)
+    text = re.sub(regEkla20,"",text)
+    text = re.sub(regEkla21,"",text)
+    text = re.sub(regEkla22,"",text);
+    return text
+
+def deledklammern( text ):
+    text = re.sub(regEkla1, "",text)
+    text = re.sub(regEkla2, "",text)
+    text = re.sub(regEkla3, "",text)
+    text = re.sub(regEkla4,"",text)
+    text = re.sub(regEkla5,"",text)
+    text = re.sub(regEkla6,"",text)
+    text = re.sub(regEkla9,"",text)
+    text = re.sub(regEkla10,"",text)
+    text = re.sub(regEkla11,"",text)
+    text = re.sub(regEkla12,"",text)
+    text = re.sub(regEkla13,"",text)
+    text = re.sub(regEkla14,"",text)
+    text = re.sub(regEkla15,"",text)
+    text = re.sub(regEkla16,"",text)
+    text = re.sub(regEkla17,"",text)
+    text = re.sub(regEkla18,"",text)
+    text = re.sub(regEkla19,"",text)
+    text = re.sub(regEkla20,"",text)
+    text = re.sub(regEkla21,"",text)
+    text = re.sub(regEkla22,"",text);
     return text
 
 regEuv = re.compile( r"u" )
@@ -567,7 +633,7 @@ regEuv = re.compile( r"u" )
 def deluv( text ):
     return re.sub( regEuv, "v", text );
 
-def Trennstricheraus( wliste ):
+def Trennstricheraus( wliste ): #\n version
     ersterteil = ""
     zweiterteil = ""
     neueWLISTE = []
@@ -603,6 +669,8 @@ def Trennstricheraus( wliste ):
                     zweiteralsliste = wliste[ w ].split( "]" )
                     neueWLISTE.append( ersterteil+zweiteralsliste[1] )
                     #print("NO SPLIT", ersterteil+zweiteralsliste[1].substring(1, zweiteralsliste[1].length-1))
+    if(ersterteil != "" and zweiterteil == "" ):
+        neueWLISTE.append( ersterteil+"-" )
     return neueWLISTE
 
 
@@ -787,77 +855,41 @@ if __name__ == "__main__":
 ##******************************************************************************
 '''
 All Fkt in this Script with short introduction
-
 setAnaFormTO( formstring ) #setter for global variable of analysis normal form
-
 setDisplFormTO( formstring ) #setter for the global variable of display normal form
-
 disambiguDIAkritika( string ) # return String replaced of diakrit
-
 normarrayk( array ) # normalizes the key strings of a dictiopnary 
-
 normatextwordbyword( text, wichnorm ) #splits the text into words and calls norm fkt
-
 normatext( text, wichnorm ) #calles norm fkt on whole string
-
 disambiguDIAkritika( astr ) # takes a string, replaces diakritica to have them equaly encoded, return string
-
 ExtractDiafromBuchst( buchst ) # takes array of letters and returns array of array of diakritica and array of letters
-
 replaceBehauchung( adiakstring ) # replaces behauchung in the transliteration of greek to latin
-
 Expandelision( aword ) # given a word, if this is an elusion it will be expanded
-
 TraslitAncientGreekLatin( astring ) # takes greek utf8 string and returns transliterated latin utf8 string
-
 spitzeklammernHTML # ascapes spitze klammern to html encoding
-
 basClean( astring ) # basic equalisation and hypenation reversal
-
 AlphaPrivativumCopulativum( aword ) # takes a word utf8 greek and splits the alpha privativum and copulativum from wordform
-
 iotasubiotoad( aword ) # takes greek utf8 string and repleces jota subscriptum with jota ad scriptum
-
 ohnediakritW( aword ) # replaces diakritica
-
 capitali( astring ) # first letter capitalized rest lowercase
-
 nodiakinword( astring ) # combination of diakrica removal and jota subscriptum conversion
-
 delall( text ) #deletes UV, klammern, sigma, grkl, umbrüche, ligaturen, interpunktion, edition numbering, unknown signs, diakritika
-
 delnumbering( text ) #takes string return string without the edition numbering i.e. [2]
-
 delligaturen( text ) # takes a string return string with ligatures turned to single letters
-
 deldiak( text ) #like nodiakinword()
-
 delinterp( text ) #takes string and returns the string without
-
 delunknown( text ) # delete some to the programmer unknown signs
-
 delumbrbine( text ) # input string and get it back with linebreaks removed
-
 delmakup( text ) #input a string and get it pack with markup removed
-
 delgrkl( text ) #input a string and get it bach with all small case letters
-
 sigmaistgleich( text ) #equalize tailing sigma
-
 delklammern( text ) # input stringa nd get it back with no brackets
-
 deluv( text ) # repaces all u with v
-
 Trennstricheraus( array of words ) #input array of words removes hyphenation
-
 UmbruchzuLeerzeichen( text ) # input a string and get back a string with newlines replaces by spaces
-
 Interpunktiongetrennt( wordlist ) #input array of words and have the interpunction separated from each word
-
 iotasubiotoadL( wordlist ) # same as iotasubiotoad but on array of words
-
 GRvorbereitungT( text ) # input a string and get a combination of diakritica disambiguation, normalization, hyphenation removal, linebreak to space, interpunktion separation and klammern removal
-
 hervKLAMMSYS( text ) # input a string, mark all editorial signs
 '''
 
