@@ -65,6 +65,227 @@ punktunter = "◌̣ "; #Punkt unter Buchstaben - Buchstabe nur Teilweise erhalte
 anzgriechbuch = re.compile( r" \.+ " ) #Anzahl unbestimmabrer griechischen Bustaben, Klasse l13
 anzlatbuchs = re.compile( r" \++ " )  #Anzahl unbestimmbarer römsicher Buchstaben, Klasse l14
 korrdeseditors = re.compile( r"\<\>" ) #Korrektur des Editors, Klasse l15
+
+#**************************************************
+# Section 0000
+# helper
+#**************************************************
+ronum = {#not perfect
+"i" :1, 
+"ii" :1, 
+"iii" :1, 
+"iiii" :1, 
+"iv" :1, 
+"v" :1, 
+"vii" :1, 
+"viii" :1, 
+"ix" :1, 
+"x" :1, 
+"xi" :1, 
+"xii" :1, 
+"xiii" :1, 
+"xiv" :1, 
+"xv" :1, 
+"xvi" :1, 
+"xvii" :1, 
+"xviii" :1, 
+"xix" :1, 
+"xx" :1, 
+"xxi" :1, 
+"xxii" :1, 
+"xxiii" :1, 
+"xxiv" :1, 
+"xxv" :1, 
+"xxvi" :1, 
+"xxvii" :1, 
+"xxviii" :1, 
+"xxix" :1, 
+"xxx" :1, 
+"xxxi" :1, 
+"xxxii" :1, 
+"xxxiii" :1, 
+"xxxiv" :1, 
+"xxxv" :1, 
+"xxxvi" :1, 
+"xxxvii" :1, 
+"xxxviii" :1, 
+"xxxix" :1, 
+"xl" :1, 
+"xli" :1, 
+"xlii" :1, 
+"xliii" :1, 
+"xliv" :1, 
+"xlv" :1, 
+"xlvi" :1, 
+"xlvii" :1, 
+"xlviii" :1, 
+"xlix" :1, 
+"l" :1, 
+"li" :1, 
+"lii" :1, 
+"liii" :1, 
+"liv" :1, 
+"lv" :1, 
+"lvi" :1, 
+"lvii" :1, 
+"lviii" :1, 
+"lix" :1, 
+"lx" :1, 
+"lxi" :1, 
+"lxii" :1, 
+"lxiii" :1, 
+"lxiv" :1, 
+"lxv" :1, 
+"lxvi" :1, 
+"lxvii" :1, 
+"lxviii" :1, 
+"lxix" :1, 
+"lxx" :1, 
+"lxxi" :1, 
+"lxxii" :1, 
+"lxxiii" :1, 
+"lxxiv" :1, 
+"lxxv" :1, 
+"lxxvi" :1, 
+"lxxvii" :1, 
+"lxxviii" :1, 
+"lxxix" :1, 
+"lxxx" :1, 
+"lxxxi" :1, 
+"lxxxii" :1, 
+"lxxxiii" :1, 
+"lxxxiv" :1, 
+"lxxxv" :1, 
+"lxxxvi" :1, 
+"lxxxvii" :1, 
+"lxxxviii" :1, 
+"lxxxix" :1, 
+"xc" :1, 
+"xci" :1, 
+"xcii" :1, 
+"xciii" :1, 
+"xciv" :1, 
+"xcv" :1, 
+"xcvi" :1, 
+"xcvii" :1, 
+"xcviii" :1, 
+"xcix" :1, 
+"c":1
+}
+
+grnum = {#not perfect
+"α" :1, 
+"β" :1, 
+"γ" :1, 
+"δ" :1, 
+"ε" :1, 
+"ϛ" :1, 
+"ζ" :1, 
+"η" :1, 
+"θ" :1, 
+"ι" :1, 
+"ια" :1, 
+"ιβ" :1, 
+"ιγ" :1, 
+"ιδ" :1, 
+"ιε" :1, 
+"ιϛ" :1, 
+"ιζ" :1, 
+"ιη" :1, 
+"ιθ" :1, 
+"κ" :1, 
+"κα" :1, 
+"κβ" :1, 
+"κγ" :1, 
+"κδ" :1, 
+"κε" :1, 
+"κϛ" :1, 
+"κζ" :1, 
+"κη" :1, 
+"κθ" :1, 
+"λ" :1, 
+"λα" :1, 
+"λβ" :1, 
+"λγ" :1, 
+"λδ" :1, 
+"λε" :1, 
+"λϛ" :1, 
+"λζ" :1, 
+"λη" :1, 
+"λθ" :1, 
+"μ" :1, 
+"μα" :1, 
+"μβ" :1, 
+"μγ" :1, 
+"μδ" :1, 
+"με" :1, 
+"μϛ" :1, 
+"μζ" :1, 
+"μη" :1, 
+"μθ" :1, 
+"ν" :1, 
+"να" :1, 
+"νβ" :1, 
+"νγ" :1, 
+"νδ" :1, 
+"νε" :1, 
+"νϛ" :1, 
+"νζ" :1, 
+"νη" :1, 
+"νθ" :1, 
+"ξ" :1, 
+"ξα" :1, 
+"ξβ" :1, 
+"ξγ" :1, 
+"ξδ" :1, 
+"ξε" :1, 
+"ξϛ" :1, 
+"ξζ" :1, 
+"ξη" :1, 
+"ξθ" :1, 
+"ο" :1, 
+"οα" :1, 
+"οβ" :1, 
+"ογ" :1, 
+"οδ" :1, 
+"οε" :1, 
+"οϛ" :1, 
+"οζ" :1, 
+"οη" :1, 
+"οθ" :1, 
+"π" :1, 
+"πα" :1, 
+"πβ" :1, 
+"πγ" :1, 
+"πδ" :1, 
+"πε" :1, 
+"πϛ" :1, 
+"πζ" :1, 
+"πη" :1, 
+"πθ" :1, 
+"ϟ" :1, 
+"ϟα" :1, 
+"ϟβ" :1, 
+"ϟγ" :1, 
+"ϟδ" :1, 
+"ϟε" :1, 
+"ϟϛ" :1, 
+"ϟζ" :1, 
+"ϟη" :1, 
+"ϟθ" :1, 
+"ρ" : 1
+}
+
+def isnumber( maybe ):
+    #do romannumbers
+    if( maybe.isdigit() ):
+        return True
+    elif( maybe in ronum ):
+        return True     
+    elif( maybe in grnum ):
+        return True
+    return False
+
 #**************************************************
 # Section 000
 # basic UNICODE NORMAL FORM 
@@ -80,6 +301,11 @@ def normarrayk( aarray ):
 	for p in aarray:
 		replacearray[ disambiguDIAkritika( unicodedata.normalize( analysisNormalform, p ) ) ] = aarray[ p ];
 	return replacearray;
+
+def normarrayval( aarray ): # by reference ????
+    for p in aarray:
+        aarray[ p ] = disambiguDIAkritika( unicodedata.normalize( analysisNormalform, aarray[ p ] ) );
+    
 
 #def normatextwordbyword( text, wichnorm ):
 #    spt = text.split( " " )
@@ -521,11 +747,17 @@ regU1 = re.compile( r"†" )
 regU2 = re.compile( r"\*" )
 regU3 = re.compile( r"⋖" )
 regU4 = re.compile( r"#" ) 
+regU5 = re.compile( r"⸎" )
+regU6 = re.compile( r"☽" )
+regU7 = re.compile( r"☾" )
 def delunknown( text ):
     text = re.sub(regU1, "", text)
     text = re.sub(regU2, "", text)
     text = re.sub(regU3, "", text)
     text = re.sub(regU4, "", text)
+    text = re.sub(regU5, "", text)
+    text = re.sub(regU6, "", text)
+    text = re.sub(regU7, "", text)
     return text
 
 # def takes string and replace html line breakes
@@ -577,7 +809,8 @@ regEkla19 = re.compile( '\u2329'.encode("utf-8").decode("utf-8") )
 regEkla20 = re.compile( '\u232A'.encode("utf-8").decode("utf-8") )
 regEkla21 = re.compile( '\u27E8'.encode("utf-8").decode("utf-8") )
 regEkla22 = re.compile( '\u27E9'.encode("utf-8").decode("utf-8") )
-
+#⌋ 
+#⌊ -- wir brauchen eine Funktion die die signis criticis Zeichenbehandelt!!!
 # def take sstring and replaces the brakets
 
 def delklammern( text ):
@@ -706,26 +939,9 @@ def GRvorbereitungT( dtext ):
     #diewo = Klammernbehandeln( diewo )
     return diewo
 
-#******************************************************************************
-# Section 3: edition klammerung
-#******************************************************************************
-def hervKLAMMSYS( stringtomani ): #RUN ON NFC/NFKC
-    out = ""
-    startindex = 0
-    for m in re.finditer( lueckeBestimmt, stringtomani ):
-        out += stringtomani[ startindex : m.start() ] + "<b>"+m.group(0)+"</b>"      
-        startindex = m.end()+1
-    out += stringtomani[ startindex : len(stringtomani) ]
-    return out
-
-def delKLAMMSYS( stringtomani ): #RUN ON NFC/NFKC
-    out = ""
-    startindex = 0
-    for m in re.finditer( lueckeBestimmt, stringtomani ):
-        out += stringtomani[ startindex : m.start() ]      
-        startindex = m.end()+1
-    out += stringtomani[ startindex : len(stringtomani) ]
-    return out
+unterPu = re.compile( r"◌̣ " )
+def delUnterpunkt( text ):
+    return re.sub(unterPu, "",text)
 
 # USAGE
 def demUsage( ):
@@ -890,7 +1106,6 @@ UmbruchzuLeerzeichen( text ) # input a string and get back a string with newline
 Interpunktiongetrennt( wordlist ) #input array of words and have the interpunction separated from each word
 iotasubiotoadL( wordlist ) # same as iotasubiotoad but on array of words
 GRvorbereitungT( text ) # input a string and get a combination of diakritica disambiguation, normalization, hyphenation removal, linebreak to space, interpunktion separation and klammern removal
-hervKLAMMSYS( text ) # input a string, mark all editorial signs
 '''
 
 #eof
