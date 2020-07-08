@@ -166,6 +166,12 @@ const regEkla13 = new RegExp( "«", 'g' );
 const regEkla14 = new RegExp( "»", 'g' );
 const regEkla15 = new RegExp( "⟦", 'g' );
 const regEkla16 = new RegExp( "⟧", 'g' );
+const regEkla17 = new RegExp( '\u{3008}', 'g' );
+const regEkla18 = new RegExp( '\u{3009}', 'g' );
+const regEkla19 = new RegExp( '\u{2329}', 'g' );
+const regEkla20 = new RegExp( '\u{232A}', 'g' );
+const regEkla21 = new RegExp( '\u{27E8}', 'g' );
+const regEkla22 = new RegExp( '\u{27E9}', 'g' );
 
 const regEuv = new RegExp( "u", 'g' );
 
@@ -194,6 +200,228 @@ const anzgriechbuch = new RegExp( / \.+ /, 'g' ); //Anzahl unbestimmabrer griech
 const anzlatbuchs = new RegExp( / \++ /, 'g' );  //Anzahl unbestimmbarer römsicher Buchstaben, Klasse l14
 const korrdeseditors = new RegExp( /\<\>/, 'g' ); //Korrektur des Editors, Klasse l15
 
+//**************************************************
+// Section 0000
+// helper
+//**************************************************
+const ronum = {//not perfect
+"i" :1, 
+"ii" :1, 
+"iii" :1, 
+"iiii" :1, 
+"iv" :1, 
+"v" :1, 
+"vii" :1, 
+"viii" :1, 
+"ix" :1, 
+"x" :1, 
+"xi" :1, 
+"xii" :1, 
+"xiii" :1, 
+"xiv" :1, 
+"xv" :1, 
+"xvi" :1, 
+"xvii" :1, 
+"xviii" :1, 
+"xix" :1, 
+"xx" :1, 
+"xxi" :1, 
+"xxii" :1, 
+"xxiii" :1, 
+"xxiv" :1, 
+"xxv" :1, 
+"xxvi" :1, 
+"xxvii" :1, 
+"xxviii" :1, 
+"xxix" :1, 
+"xxx" :1, 
+"xxxi" :1, 
+"xxxii" :1, 
+"xxxiii" :1, 
+"xxxiv" :1, 
+"xxxv" :1, 
+"xxxvi" :1, 
+"xxxvii" :1, 
+"xxxviii" :1, 
+"xxxix" :1, 
+"xl" :1, 
+"xli" :1, 
+"xlii" :1, 
+"xliii" :1, 
+"xliv" :1, 
+"xlv" :1, 
+"xlvi" :1, 
+"xlvii" :1, 
+"xlviii" :1, 
+"xlix" :1, 
+"l" :1, 
+"li" :1, 
+"lii" :1, 
+"liii" :1, 
+"liv" :1, 
+"lv" :1, 
+"lvi" :1, 
+"lvii" :1, 
+"lviii" :1, 
+"lix" :1, 
+"lx" :1, 
+"lxi" :1, 
+"lxii" :1, 
+"lxiii" :1, 
+"lxiv" :1, 
+"lxv" :1, 
+"lxvi" :1, 
+"lxvii" :1, 
+"lxviii" :1, 
+"lxix" :1, 
+"lxx" :1, 
+"lxxi" :1, 
+"lxxii" :1, 
+"lxxiii" :1, 
+"lxxiv" :1, 
+"lxxv" :1, 
+"lxxvi" :1, 
+"lxxvii" :1, 
+"lxxviii" :1, 
+"lxxix" :1, 
+"lxxx" :1, 
+"lxxxi" :1, 
+"lxxxii" :1, 
+"lxxxiii" :1, 
+"lxxxiv" :1, 
+"lxxxv" :1, 
+"lxxxvi" :1, 
+"lxxxvii" :1, 
+"lxxxviii" :1, 
+"lxxxix" :1, 
+"xc" :1, 
+"xci" :1, 
+"xcii" :1, 
+"xciii" :1, 
+"xciv" :1, 
+"xcv" :1, 
+"xcvi" :1, 
+"xcvii" :1, 
+"xcviii" :1, 
+"xcix" :1, 
+"c":1
+};
+
+const grnum = {//not perfect
+"α" :1, 
+"β" :1, 
+"γ" :1, 
+"δ" :1, 
+"ε" :1, 
+"ϛ" :1, 
+"ζ" :1, 
+"η" :1, 
+"θ" :1, 
+"ι" :1, 
+"ια" :1, 
+"ιβ" :1, 
+"ιγ" :1, 
+"ιδ" :1, 
+"ιε" :1, 
+"ιϛ" :1, 
+"ιζ" :1, 
+"ιη" :1, 
+"ιθ" :1, 
+"κ" :1, 
+"κα" :1, 
+"κβ" :1, 
+"κγ" :1, 
+"κδ" :1, 
+"κε" :1, 
+"κϛ" :1, 
+"κζ" :1, 
+"κη" :1, 
+"κθ" :1, 
+"λ" :1, 
+"λα" :1, 
+"λβ" :1, 
+"λγ" :1, 
+"λδ" :1, 
+"λε" :1, 
+"λϛ" :1, 
+"λζ" :1, 
+"λη" :1, 
+"λθ" :1, 
+"μ" :1, 
+"μα" :1, 
+"μβ" :1, 
+"μγ" :1, 
+"μδ" :1, 
+"με" :1, 
+"μϛ" :1, 
+"μζ" :1, 
+"μη" :1, 
+"μθ" :1, 
+"ν" :1, 
+"να" :1, 
+"νβ" :1, 
+"νγ" :1, 
+"νδ" :1, 
+"νε" :1, 
+"νϛ" :1, 
+"νζ" :1, 
+"νη" :1, 
+"νθ" :1, 
+"ξ" :1, 
+"ξα" :1, 
+"ξβ" :1, 
+"ξγ" :1, 
+"ξδ" :1, 
+"ξε" :1, 
+"ξϛ" :1, 
+"ξζ" :1, 
+"ξη" :1, 
+"ξθ" :1, 
+"ο" :1, 
+"οα" :1, 
+"οβ" :1, 
+"ογ" :1, 
+"οδ" :1, 
+"οε" :1, 
+"οϛ" :1, 
+"οζ" :1, 
+"οη" :1, 
+"οθ" :1, 
+"π" :1, 
+"πα" :1, 
+"πβ" :1, 
+"πγ" :1, 
+"πδ" :1, 
+"πε" :1, 
+"πϛ" :1, 
+"πζ" :1, 
+"πη" :1, 
+"πθ" :1, 
+"ϟ" :1, 
+"ϟα" :1, 
+"ϟβ" :1, 
+"ϟγ" :1, 
+"ϟδ" :1, 
+"ϟε" :1, 
+"ϟϛ" :1, 
+"ϟζ" :1, 
+"ϟη" :1, 
+"ϟθ" :1, 
+"ρ" : 1
+};
+
+function isnumber( maybe ){
+    //do romannumbers
+    const maymay = parseInt(maybe);
+    if( !isNaN( maymay ) ){
+        return true;
+    } else if( maybe in ronum ){
+        return true;     
+    } else if( maybe in grnum ){
+        return true;
+    }
+    return false;
+}
 //******************************************************************************
 // Section 000
 // basic UNICODE NORMAL FORM / TRANSLITERATION
@@ -216,12 +444,12 @@ function normarrayk( aarray ){
 
 function normarrayval( aarray ){ // by reference ????
     for( let p in aarray ){
-        aarray[ p ] = aarray[ p ].normalize( analysisNormalform );
+        aarray[ p ] = disambiguDIAkritika( aarray[ p ].normalize( analysisNormalform ));
     }
 }
 
 // function takes sting and normalform string (for example "NFD")
-function normatextwordbyword( text, wichnorm ){
+/*function normatextwordbyword( text, wichnorm ){
     let spt = text.split( " " );
     const lele = spt.length;
     for( let w = 0; w < lele; w++ ){
@@ -229,19 +457,36 @@ function normatextwordbyword( text, wichnorm ){
         spt[ w ] = nw;
     }
     return spt.join( " " )
-}
+}*/
 
 function normatext( text, wichnorm ){
     return text.normalize( wichnorm );
 }
 
-
+const spai1 = new RegExp( '\u{2002}', 'g' );//enspacing
+const spai2 = new RegExp( '\u{2000}', 'g' );//enquad
+function sameallspacing( astr ){
+    astr = astr.replace( spai1, ' ' );
+    astr = astr.replace( spai2, ' ' );
+    return astr;
+}
 
 function disambiguDIAkritika( astr ){
     astr = astr.split( "\u0027" ).join( "\u2019" ); //typogra korrektes postroph;
     astr = astr.split( "'" ).join( "\u2019" );
     astr = astr.split( "\u1FBD" ).join( "\u2019" );
     return astr;
+}
+
+function disambiguadashes( astring ){
+    astring = astring.replace( cleangeviert, '-' );
+    astring = astring.replace( cleanhalbgeviert, '-' );
+    astring = astring.replace( cleanziffbreitergeviert, '-' );
+    astring = astring.replace( cleanviertelgeviert, '-' );
+    astring = astring.replace( cleanklgeviert, '-' );
+    astring = astring.replace( cleanklbindstrichkurz, '-' );
+    astring = astring.replace( cleanklbindstrichvollbreit, '-' );
+    return astring;
 }
 
 function ExtractDiafromBuchst( buchst ){ //input as string
@@ -461,6 +706,13 @@ function ohnesatzzeichen( wliste ){
 	return wliste;
 }
 
+//usage: replaceWordsfromarray( ["in", "cum", "et", "a", "ut"], " ", stringggg )
+function replaceWordsfromarray( arr, replacement, strstr ){
+    for( let a in arr){
+        strstr = strstr.replace( arr[a], replacement );
+    }
+    return strstr
+}
 //******************************************************************************
 // Section 0
 // word leve conversions: 
@@ -586,6 +838,14 @@ function delumbrbine( text ){
     return text.replace(regEbr1, "").replace(regEbr2, "");
 }
 
+function umbrtospace( text ){
+    text = text.replace(cleanNEWL, " ");
+    text = text.replace(cleanRETL, " ");
+    text = text.replace(regEbr1, " ");
+    text = text.replace(regEbr2, " ");
+    return text;
+}
+
 //more to come
 function delmakup( text ){
     return text.replace(cleanhtmltags, "").replace(cleanhtmlformat1, "");
@@ -604,9 +864,12 @@ function sigmaistgleich( text ){
 
 // function take sstring and replaces the brakets -- do not run this before the Klammersystem fkt
 function delklammern( text ){
-    return text.replace(regEkla1, "").replace(regEkla2, "").replace(regEkla3, "").replace(regEkla4,"").replace(regEkla5,"").replace(regEkla6,"").replace(regEkla7,"").replace(regEkla8,"").replace(regEkla9,"").replace(regEkla10,"").replace(regEkla11,"").replace(regEkla12,"").replace(regEkla13,"").replace(regEkla14,"").replace(regEkla15,"").replace(regEkla16,"");
+    return text.replace(regEkla1, "").replace(regEkla2, "").replace(regEkla3, "").replace(regEkla4,"").replace(regEkla5,"").replace(regEkla6,"").replace(regEkla7,"").replace(regEkla8,"").replace(regEkla9,"").replace(regEkla10,"").replace(regEkla11,"").replace(regEkla12,"").replace(regEkla13,"").replace(regEkla14,"").replace(regEkla15,"").replace(regEkla16,"").replace(regEkla17,"").replace(regEkla18,"").replace(regEkla19,"").replace(regEkla20,"").replace(regEkla21,"").replace(regEkla22,"");
 }
 
+function deledklammern( text ){
+    return text.replace(regEkla1, "").replace(regEkla2, "").replace(regEkla3, "").replace(regEkla4,"").replace(regEkla5,"").replace(regEkla6,"").replace(regEkla9,"").replace(regEkla10,"").replace(regEkla11,"").replace(regEkla12,"").replace(regEkla13,"").replace(regEkla14,"").replace(regEkla15,"").replace(regEkla16,"").replace(regEkla17,"").replace(regEkla18,"").replace(regEkla19,"").replace(regEkla20,"").replace(regEkla21,"").replace(regEkla22,"");
+}
 // function takes string and replaces u by v, used in classical latin texts
 function deluv( text ){
     return text.replace( regEuv, "v" );
@@ -710,37 +973,9 @@ function GRvorbereitungT( dtext ){
 	return diewo;
 } 
 
-//******************************************************************************
-// Section 3: edition klammerung --- THIS HAS MOVED TO INDEX PROJECT
-//******************************************************************************
-function hervKLAMMSYS( stringtomani ){ //RUN ON NFC/NFKC
-    let matches = stringtomani.match( lueckeBestimmt );
-    let i = 0;
-    let out = "";
-    let startindex = 0;
-    while( lueckeBestimmt.exec( stringtomani ) ){
-        //console.log( lueckeBestimmt.lastIndex-matches[i].length, lueckeBestimmt.lastIndex, matches[i] );
-        out += stringtomani.slice(startindex, lueckeBestimmt.lastIndex - matches[i].length) + "<b>"+matches[i]+"</b><sup>l0</sup>";
-        i+=1;
-        startindex = lueckeBestimmt.lastIndex;
-    }
-    out += stringtomani.slice(startindex, stringtomani.length);
-    return out;
-}
-
-function delKLAMMSYS( stringtomani ){ //RUN ON NFC/NFKC
-    let matches = stringtomani.match( lueckeBestimmt );
-    console.log(matches);
-    let i = 0;
-    let out = "";
-    let startindex = 0;
-    while( lueckeBestimmt.exec( stringtomani ) ){
-        console.log( lueckeBestimmt.lastIndex-matches[i].length, lueckeBestimmt.lastIndex, matches[i] );
-        out += stringtomani.slice(startindex, lueckeBestimmt.lastIndex - matches[i].length); 
-        i+=1;
-        startindex = lueckeBestimmt.lastIndex;
-    }
-    return out;
+const unterPu = new RegExp( "◌̣ ", 'g' )
+function delUnterpunkt( text ){
+    return text.replace( unterPu, "" );
 }
 
 //******************************************************************************
@@ -901,13 +1136,6 @@ function demUsage( atesttext ){
     //console.log( comb );       
     atttext = atttext + "<br/><br/>"+ descomb+"<br/>"+ comb;
    
-    
-    //let klammsys = delKLAMMSYS( testnorm );
-    let klammsys = hervKLAMMSYS( atesttext );
-    let desklammsys = "<b>w) Editions Klammerung (delet leidener Klammersystem):</b>";
-    console.log( desklammsys );
-    console.log( klammsys );   
-    atttext = atttext + "<br/><br/>"+ desklammsys+"<br/>"+ klammsys;
 
    document.getElementById( "erg").innerHTML = atttext;
 }
