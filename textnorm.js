@@ -437,14 +437,30 @@ function setDisplFormTO( fnew ){
 function normarrayk( aarray ){
 	let replacearray = new Object( );
 	for( let p in aarray ){
-		replacearray[ disambiguDIAkritika( p.normalize( analysisNormalform ) ) ] = aarray[ p ];
+		replacearray[  disambiguDIAkritika( p.normalize( analysisNormalform ) ) ] = aarray[ p ];
+	}
+	return replacearray;
+}
+
+function normarrayksiguv( aarray ){
+	let replacearray = new Object( );
+	for( let p in aarray ){
+		replacearray[ sigmaistgleich( deluv( disambiguDIAkritika( p.normalize( analysisNormalform ) ) ) )] = aarray[ p ];
 	}
 	return replacearray;
 }
 
 function normarrayval( aarray ){ // by reference ????
     for( let p in aarray ){
+        
         aarray[ p ] = disambiguDIAkritika( aarray[ p ].normalize( analysisNormalform ));
+    }
+}
+
+function normarrayvalsiguv( aarray ){ // by reference ????
+    for( let p in aarray ){
+        
+        aarray[ p ] = sigmaistgleich(deluv(disambiguDIAkritika( aarray[ p ].normalize( analysisNormalform ))));
     }
 }
 
