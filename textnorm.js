@@ -57,7 +57,7 @@ const buchsCoptic = {"ϐ": "B", "ϑ":"Th", "ϱ":"r", "ϰ":"k", "ϒ":"y", "ϕ":"p
 
 //"de" Akzente richtig, oder falsch????
 let listofelusion = { "δ᾽":"δὲ","δ'":"δὲ", "ἀλλ’": "ἀλλά", "ἀνθ’": "ἀντί", "ἀπ’": "ἀπό", "ἀφ’": "ἀπό","γ’": "γε","γένοιτ’": "γένοιτο","δ’": "δέ","δι’": "διά","δύναιτ’": "δύναιτο","εἶτ’": "εἶτα","ἐπ’": "ἐπί","ἔτ’": "ἔτι","ἐφ’": "ἐπί","ἡγοῖντ’": "ἡγοῖντο","ἵν’": "ἵνα","καθ’": "κατά","κατ’": "κατά","μ’": "με","μεθ’": "μετά","μετ’": "μετά","μηδ’": "μηδέ","μήδ’": "μηδέ","ὅτ’": "ὅτε","οὐδ’": "οὐδέ","πάνθ’": "πάντα","πάντ’": "πάντα","παρ’": "παρά","ποτ’": "ποτε","σ’": "σε","ταῦθ’": "ταῦτα","ταῦτ’": "ταῦτα","τοῦτ’": "τοῦτο","ὑπ’": "ὑπό","ὑφ’": "ὑπό"};
-const cleanhtmltags = new RegExp( '\<[\w\/]*\>', 'g' );
+const cleanhtmltags = new RegExp( '<(.*?)>', 'g' );
 const cleanhtmlformat1 = new RegExp( '&nbsp;', 'g' );
 const regEbr1 = new RegExp( '<br/>', 'g' ); 
 const regEbr2 = new RegExp( '<br>', 'g' );
@@ -863,8 +863,12 @@ function umbrtospace( text ){
 }
 
 //more to come
-function delmakup( text ){
+function delmakup( text ){ 
     return text.replace(cleanhtmltags, "").replace(cleanhtmlformat1, "");
+}
+
+function makuptoleer( text ){ 
+    return text.replace(cleanhtmltags, " ").replace(cleanhtmlformat1, " ");
 }
 
 // ...
