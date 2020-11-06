@@ -1,6 +1,6 @@
 # Goal of the software
 
-This is a set of JavaScript/Python3/PHP functions (unified over the three implementations) that represent a minimum of text normalization (aka cleaning) for the work with Latin and polytonic Greek digital texts (UTF8). You can realize different levels of text normalization. There is a documented set of functions to be called on text or tokens (a set of tokens is created by a  *.split( " " )* on a string considered to be a space separated text).
+This is a set of JavaScript/Python3/PHP functions (unified over the three implementations, a Rust Version could be foubnd in this repository: https://github.com/ecomp-shONgit/string-thing) that represent a minimum of text normalization (cleaning) for the work with Latin and polytonic Greek digital texts (UTF8). You can realize different levels of text normalization. There is a documented set of functions to be called on text or tokens (a set of tokens is created by a  *.split( " " )* on a string considered to be a space separated text).
 
 Definition: A text normalization is everything done to equalize encoding, appearance 
 and composition of a sequence of signs called a text. There are two goals of 
