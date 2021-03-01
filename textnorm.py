@@ -661,7 +661,7 @@ def nodiakinword( aword ):
 # def take a string and deletes diacritical signes, ligatures, remaining interpunction, line breaks, capital letters to small ones, equalizes sigma at the end of greek words, and removes brakets
 def delall( text ):
     if( doUVlatin ): # convert u to v in classical latin text
-        text = deluv( delklammern( sigmaistgleich( delgrkl( delligaturen( delinterp( delmakup( delumbrbine( delnumbering( delunknown( deldiak(  text)))))))))))
+        text = delji( deluv( delklammern( sigmaistgleich( delgrkl( delligaturen( delinterp( delmakup( delumbrbine( delnumbering( delunknown( deldiak(  text))))))))))))
     else:
         text = delklammern( sigmaistgleich( delgrkl( delligaturen( delinterp( delmakup( delumbrbine( delnumbering( delunknown( deldiak(  text  ) ) ) ) ) ) ) )))
     return text
@@ -866,6 +866,11 @@ regEuv = re.compile( r"u" )
 def deluv( text ):
     return re.sub( regEuv, "v", text );
 
+regEji = re.compile( r"j" )
+# def takes string and replaces j by i, used in classical latin texts
+def delji( text ):
+    return re.sub( regEji, "i", text );
+
 def Trennstricheraus( wliste ): #\n version
     ersterteil = ""
     zweiterteil = ""
@@ -1035,6 +1040,11 @@ def demUsage( ):
     print( ree+"s) Text output latin u-v (repaces all u with v):" ,defo)
     print( uvdelled )
 
+    jidelled = delji( basicres )
+    print( ree+"s) Text output latin i-j (repaces all j with i):" ,defo)
+    print( jidelled )
+    
+
     alldelled = delall( basicres )
     print( ree+"t) Text output all deleted (deletes UV, klammern, sigma, grkl, umbrüche, ligaturen, interpunktion, edition numbering, unknown signs, diakritika):" ,defo)
     print( alldelled )
@@ -1101,6 +1111,7 @@ delgrkl( text ) #input a string and get it bach with all small case letters
 sigmaistgleich( text ) #equalize tailing sigma
 delklammern( text ) # input stringa nd get it back with no brackets
 deluv( text ) # repaces all u with v
+delji( text ) # replace all j with i
 Trennstricheraus( array of words ) #input array of words removes hyphenation
 UmbruchzuLeerzeichen( text ) # input a string and get back a string with newlines replaces by spaces
 Interpunktiongetrennt( wordlist ) #input array of words and have the interpunction separated from each word
