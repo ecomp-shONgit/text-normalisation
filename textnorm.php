@@ -175,6 +175,7 @@ $GLOBALS["regEkla15"] =  "/⟦/";
 $GLOBALS["regEkla16"] =  "/⟧/";
 
 $GLOBALS["regEuv"] =  "/u/";
+$GLOBALS["regEji"] =  "/j/";
 
 //original abschrift, Klammerbehandlungfließtext
 //Inschriften Klammersystem
@@ -535,7 +536,7 @@ function nodiakinword( $aword ){
 // function take a string and deletes diacritical signes, ligatures, remaining interpunction, line breaks, capital letters to small ones, equalizes sigma at the end of greek words, and removes brakets
 function delall( $text ){
     if( $GLOBALS["doUVlatin"] ){ // convert u to v in classical latin text
-        $text=deluv(delklammern(sigmaistgleich(delgrkl(delumbrbine(delligaturen(delinterp(delmakup(delnumbering(delunknown(deldiak($text)))))))))));
+        $text=delji(deluv(delklammern(sigmaistgleich(delgrkl(delumbrbine(delligaturen(delinterp(delmakup(delnumbering(delunknown(deldiak($text))))))))))));
     } else {
         $text=delklammern(sigmaistgleich(delgrkl(delumbrbine(delligaturen(delinterp(delmakup(delnumbering(delunknown(deldiak($text))))))))));
     }
@@ -661,6 +662,11 @@ function delklammern( $text ){
 // function takes string and replaces u by v, used in classical latin texts
 function deluv( $text ){
     return preg_replace( $GLOBALS["regEuv"], "v" , $text );
+}
+
+// function takes string and replaces j by i, used in classical latin texts
+function delji( $text ){
+    return preg_replace( $GLOBALS["regEji"], "i" , $text );
 }
 
 //some bundels
@@ -916,6 +922,10 @@ function demUsagePHP( ){
     $str10 = "<b>s) Text output latin u-v (repaces all u with v):</b>";
     $atttext = $atttext."\n\n<br/><br/>".$str10."<br/>\n".$uvdelled;
 
+    $jidelled = delji( $basicres );
+    $str13 = "<b>s0) Text output latin j-i (repaces all j with i):</b>";
+    $atttext = $atttext."\n\n<br/><br/>".$str13."<br/>\n".$jidelled;
+
     $alldelled = delall( $basicres );
     $str11 = "<b>t) Text output all deleted (deletes UV, klammern, sigma, grkl, umbrüche, ligaturen, interpunktion, edition numbering, unknown signs, diakritika):</b>";
     $atttext = $atttext."\n\n<br/><br/>".$str11."<br/>\n".$alldelled;
@@ -1002,6 +1012,8 @@ sigmaistgleich( text ) //equalize tailing sigma
 delklammern( text ) // input stringa nd get it back with no brackets
 
 deluv( text ) // repaces all u with v
+
+delji( text ) // replace j with i
 
 Trennstricheraus( array of words ) //input array of words removes hyphenation
 
