@@ -41,6 +41,9 @@ let doUVlatin = false;
 const analysisNormalform = "NFKD";
 const dispnormalform = "NFC";
 
+//
+let notprivalpha = [];//["ἀΐω"];
+//letters and words arrays
 let buchstGRI = {"Α":"A", "α":"a", "Β":"B", "β":"b", "Γ":"G", "γ":"g", "Δ":"D", "δ":"d", "Ε":"E", "ε":"e", "Ζ":"Z", "ζ":"z", "Η":"H", "η":"h", "Θ":"Th", "θ":"th", "Ι":"I", "ι":"i", "Κ": "K", "κ":"k", "Λ":"L", "λ":"l", "Μ":"M", "μ":"m", "Ν":"N", "ν":"n", "Ξ":"Xi", "ξ":"xi", "Ο":"O", "ο":"o", "Π":"P", "π":"p", "Ρ":"R", "ρ":"r", "Σ":"S", "σ":"s", "ς":"s", "Τ":"T", "τ":"t", "Υ":"U", "υ":"u", "Φ":"Ph", "φ":"ph", "Χ":"X", "χ":"x", "Ψ":"Ps", "ψ":"ps", "Ω":"O", "ω":"o"}
 let LAGRI = {"A":"Α", "a":"α", "B":"Β", "b":"β", "G":"Γ", "g":"γ", "D":"Δ", "d":"δ", "E":"Ε", "e":"ε", "Z":"Ζ", "z":"ζ", "H":"Η", "h":"η", "Th":"Θ", "th":"θ", "I":"Ι", "i":"ι", "K":"Κ", "k":"κ","C":"Κ", "c":"κ", "Q":"Κ", "q":"κ", "L":"Λ", "l":"λ", "M":"Μ", "m":"μ", "N":"Ν", "n":"ν", "Xi":"Ξ", "xi":"ξ", "O":"Ο", "o":"ο", "P":"Π", "p":"π", "R":"Ρ", "r":"ρ", "S":"Σ", "s":"σ", "s":"ς", "T":"Τ", "t":"τ", "U":"Υ", "u":"υ", "Ph":"Φ", "ph":"φ", "F":"Φ", "f":"φ", "V":"Φ", "v":"φ", "X":"Χ", "x":"χ", "Ps":"Ψ", "ps":"ψ", "O":"Ω", "o":"ω"}
 const groups = {"γγ":["n", "g"], "γκ":["n", "c"], "γξ":["n","x"], "γχ":["n", "ch"], "ηυ":["ē", "u"]}; //only small letters?
@@ -54,156 +57,10 @@ const buchsCoptic = {"ϐ": "B", "ϑ":"Th", "ϱ":"r", "ϰ":"k", "ϒ":"y", "ϕ":"p
 "Ⲗ":"L", "ⲗ":"l", "Ⲙ":"M", "ⲙ":"m", "Ⲛ":"N","ⲛ":"n", "Ⲝ":"ks", "ⲝ":"ks", "Ⲟ	":"O", "ⲟ":"o", 
 "Ⲡ":"B", "ⲡ":"b", "Ⲣ":"R","ⲣ":"r", "Ⲧ":"T", "ⲧ":"t", "Ⲩ":"U", "ⲩ":"u", "Ⲫ":"F","ⲫ":"f","Ⲭ":"Kh", "ⲭ":"kh",
 "Ⲯ":"Ps", "ⲯ":"ps", "Ⲱ":"ô", "ⲱ":"ô", "Ͷ":"W", "ͷ":"w"}; // 
-
 //"de" Akzente richtig, oder falsch????
 let listofelusion = { "δ᾽":"δὲ","δ'":"δὲ", "ἀλλ’": "ἀλλά", "ἀνθ’": "ἀντί", "ἀπ’": "ἀπό", "ἀφ’": "ἀπό","γ’": "γε","γένοιτ’": "γένοιτο","δ’": "δέ","δι’": "διά","δύναιτ’": "δύναιτο","εἶτ’": "εἶτα","ἐπ’": "ἐπί","ἔτ’": "ἔτι","ἐφ’": "ἐπί","ἡγοῖντ’": "ἡγοῖντο","ἵν’": "ἵνα","καθ’": "κατά","κατ’": "κατά","μ’": "με","μεθ’": "μετά","μετ’": "μετά","μηδ’": "μηδέ","μήδ’": "μηδέ","ὅτ’": "ὅτε","οὐδ’": "οὐδέ","πάνθ’": "πάντα","πάντ’": "πάντα","παρ’": "παρά","ποτ’": "ποτε","σ’": "σε","ταῦθ’": "ταῦτα","ταῦτ’": "ταῦτα","τοῦτ’": "τοῦτο","ὑπ’": "ὑπό","ὑφ’": "ὑπό"};
-const cleanhtmltags = new RegExp( '<(.*?)>', 'g' );
-const cleanhtmlformat1 = new RegExp( '&nbsp;', 'g' );
-const regEbr1 = new RegExp( '<br/>', 'g' ); 
-const regEbr2 = new RegExp( '<br>', 'g' );
-const cleanNEWL = new RegExp( '\n', 'g' );
-const cleanRETL = new RegExp( '\r', 'g' );
-const cleanstrangehochpunkt = new RegExp( '‧', 'g' );
-const cleanthisbinde = new RegExp( '—', 'g' );
-const cleanthisleer = new RegExp( '\xa0', 'g' );
-const cleanleerpunkt = new RegExp( ' \\.', 'g' );
-const cleanleerdoppelpunkt = new RegExp( ' :', 'g' );
-const cleanleerkoma = new RegExp( ' ,', 'g' );
-const cleanleersemik = new RegExp( ' ;', 'g' );
-const cleanleerausrufe = new RegExp( ' !', 'g' );
-const cleanleerfrege = new RegExp( ' \\?', 'g' );
 
-//breakdown typographic letiances "Bindestriche und Geviertstriche"
-const cleanklbindstrichvollbreit = new RegExp( '－', 'g' );
-const cleanklbindstrichkurz = new RegExp( '﹣', 'g' );
-const cleanklgeviert = new RegExp( '﹘', 'g' );
-const cleanviertelgeviert = new RegExp( '‐', 'g' );
-const cleanziffbreitergeviert = new RegExp( '‒', 'g' );
-const cleanhalbgeviert = new RegExp( '–', 'g' );
-const cleangeviert = new RegExp( '—', 'g' );
-
-const escspitzeL = new RegExp( '<', 'g' );
-const escspitzeR = new RegExp( '>', 'g' );
-
-let notprivalpha = [];//["ἀΐω"];
-
-// array of unicode diacritics (relevant for polytonic greek)
-const diacriticsunicodeRegExp = new Array( 
-	new RegExp( '\u{0313}', 'g' ), 
-	new RegExp( "\u{0314}", 'g' ), 
-	new RegExp( "\u{0300}", 'g' ), 
-	new RegExp( "\u{0301}", 'g' ), 
-	new RegExp( "\u{00B4}", 'g' ), 
-	new RegExp( "\u{02CA}", 'g' ), 
-	new RegExp( "\u{02B9}", 'g' ), 
-	new RegExp( "\u{0342}", 'g' ), 
-	new RegExp( "\u{0308}", 'g' ), 
-	new RegExp( "\u{0304}", 'g' ), 
-	new RegExp( "\u{0306}", 'g' ),
-    new RegExp( '’', 'g' ),
-    new RegExp( '\'', 'g' ),
-    new RegExp( '᾽', 'g' ),
-    new RegExp( '´', 'g' ),
-    new RegExp( "‘", 'g' )
-);
-const regJotaSub = new RegExp( '\u{0345}', 'g' );
-// precompiled regular expressions
-/*const strClean1 = new RegExp( '’', 'g' );
-const strClean2 = new RegExp( '\'', 'g' );
-const strClean3 = new RegExp( '᾽', 'g' );
-const strClean4 = new RegExp( '´', 'g' );
-const strClean5 = new RegExp( "‘", 'g' );*/
-const numeringReg1 = new RegExp( '\[[0-9]+\]', 'g' );
-const numeringReg2 = new RegExp( /\[[M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})]+\]/, 'g' );
-
-// precompiled regular expressions of the relevant ligatures 
-const regEstigma = new RegExp( '\u{03DA}', 'g' ); 
-const regEstigmakl = new RegExp( '\u{03DB}', 'g' );
-const regEomikonyplsi = new RegExp( 'ȣ', 'g' );
-const regEomikonyplsiK = new RegExp( 'Ȣ', 'g' );
-const regEUk = new RegExp( 'Ꙋ', 'g' );
-const regEuk = new RegExp( 'ꙋ', 'g' );
-const regEkai = new RegExp( 'ϗ', 'g' );
-const regEKai = new RegExp( 'Ϗ', 'g' );
-const regEl1 = new RegExp( '\u{0223}', 'g' );
-const regEl2 = new RegExp( '\u{0222}', 'g' );
-
-const regEdoppelP = new RegExp( ':', 'g' );
-const regEeinfahP = new RegExp( '\\.', 'g' );
-const regEkomma = new RegExp( ',', 'g' );
-const regEsemiK = new RegExp( ';', 'g' );
-const regEhochP = new RegExp( '·', 'g' );
-const regEausr = new RegExp( '!', 'g' );
-const regEfarge = new RegExp( '\\?', 'g' );
-const regEan1 = new RegExp( '“', 'g' );
-const regEan5 = new RegExp( '„', 'g' );
-const regEan2 = new RegExp( '”', 'g' );
-const regEan3 = new RegExp( '"', 'g' );
-const regEan4 = new RegExp( "'", 'g' );
-const regEan6 = new RegExp( '(\s*)[\∶|\⋮|\·|\⁙|;]+(\s*)', 'g' );
-
-
-const regU1 = new RegExp( "†", 'g' );
-const regU2 = new RegExp( "\\*", 'g' );
-const regU3 = new RegExp( "⋖", 'g' );
-const regU4 = new RegExp( "#", 'g' ); 
-
-const regEtailingsig = new RegExp( "ς", 'g' );
-
-const regEkla1 = new RegExp( "\\(", 'g' );
-const regEkla2 = new RegExp( "\\)", 'g' );
-const regEkla3 = new RegExp( "\\{", 'g' );
-const regEkla4 = new RegExp( "\\}", 'g' );
-const regEkla5 = new RegExp( "\\[", 'g' );
-const regEkla6 = new RegExp( "\\]", 'g' );
-const regEkla7 = new RegExp( "\\<", 'g' );
-const regEkla8 = new RegExp( "\\>", 'g' );
-const regEkla9 = new RegExp( "⌈", 'g' );
-const regEkla10 = new RegExp( "⌉", 'g' );
-const regEkla11 = new RegExp( "‹", 'g' );
-const regEkla12 = new RegExp( "›", 'g' );
-const regEkla13 = new RegExp( "«", 'g' );
-const regEkla14 = new RegExp( "»", 'g' );
-const regEkla15 = new RegExp( "⟦", 'g' );
-const regEkla16 = new RegExp( "⟧", 'g' );
-const regEkla17 = new RegExp( '\u{3008}', 'g' );
-const regEkla18 = new RegExp( '\u{3009}', 'g' );
-const regEkla19 = new RegExp( '\u{2329}', 'g' );
-const regEkla20 = new RegExp( '\u{232A}', 'g' );
-const regEkla21 = new RegExp( '\u{27E8}', 'g' );
-const regEkla22 = new RegExp( '\u{27E9}', 'g' );
-
-const regEuv = new RegExp( "u", 'g' );
-
-//original abschrift, Klammerbehandlungfließtext
-//Inschriften Klammersystem
-//https://apps.timwhitlock.info/js/regex#
-const lueckeBestimmt = new RegExp( /\[[Ͱ-Ͼἀ-῾|◌̣ ]+\]/, 'g' ); //l0
-const lueckeinZeile = new RegExp( /\[\-\-\-\]/, 'g' ); //klasse l1
-const lueckeinZeile2 = new RegExp(/\[3\]/, 'g' ); //lueckeinZeile, klasse l1
-const lueckeausZeile = new RegExp( /\[\-\-\-\-\-\-\]/, 'g' ); //klasse l2
-const lueckeausZeile2 = new RegExp( /\[6\]/, 'g' ); //Luecke im Umfang einer Zeile, Klasse l2
-const lueckeunbest = new RegExp( /\]\[/, 'g' ); // Klasse l3
-
-const zeilenende = new RegExp( / \/ /, 'g' ); // Klasse l4
-const zeilenendeDigit = new RegExp( / \/ \d+ /, 'g' ); // Klasse l4
-const zeilenanfang = new RegExp( / \| /, 'g' ); // Zeilenanfang, Klasse l5
-const zeilenanfangDigit = new RegExp( / \| \d+ /, 'g' ); // Zeilenanfang, Klasse l5
-const aufabk = new RegExp( /\(\)/, 'g' );  //Auflösung von Abkürzungen, Klasse l6
-const beschaedigt = new RegExp( /\[nurbuchstabenoderleer\]/, 'g' ); //beschädigt oder undeutlich, klasse l7
-const getilgt = new RegExp( /\{\}/, 'g' ); // Tilgung, Klasse l8
-const rasiert = new RegExp( /\[\[\]\]/, 'g' ); //Rasur, Klasse l9
-const ueberschr = new RegExp( /\<\<\>\>/, 'g' ); // Überschrieben, Klasse l10
-const tilgrewrite = new RegExp( /\<\<\[\[\]\]\>\>/, 'g' ); //Tilgung Wiedereinfügung, Klasse l11
-const punktunter = "◌̣ "; //Punkt unter Buchstaben - Buchstabe nur Teilweise erhalten -- später, Klasse l12
-const anzgriechbuch = new RegExp( / \.+ /, 'g' ); //Anzahl unbestimmabrer griechischen Bustaben, Klasse l13
-const anzlatbuchs = new RegExp( / \++ /, 'g' );  //Anzahl unbestimmbarer römsicher Buchstaben, Klasse l14
-const korrdeseditors = new RegExp( /\<\>/, 'g' ); //Korrektur des Editors, Klasse l15
-
-//**************************************************
-// Section 0000
-// helper
-//**************************************************
+//numbers
 const ronum = {//not perfect
 "i" :1, 
 "ii" :1, 
@@ -409,6 +266,159 @@ const grnum = {//not perfect
 "ϟθ" :1, 
 "ρ" : 1
 };
+//regexp section
+const cleanhtmltags = new RegExp( '<(.*?)>', 'g' );
+const cleanhtmlformat1 = new RegExp( '&nbsp;', 'g' );
+const regEbr1 = new RegExp( '<br/>', 'g' ); 
+const regEbr2 = new RegExp( '<br>', 'g' );
+const cleanNEWL = new RegExp( '\n', 'g' );
+const cleanRETL = new RegExp( '\r', 'g' );
+const cleanstrangehochpunkt = new RegExp( '‧', 'g' );
+const cleanthisbinde = new RegExp( '—', 'g' );
+const cleanthisleer = new RegExp( '\xa0', 'g' );
+const cleanleerpunkt = new RegExp( ' \\.', 'g' );
+const cleanleerdoppelpunkt = new RegExp( ' :', 'g' );
+const cleanleerkoma = new RegExp( ' ,', 'g' );
+const cleanleersemik = new RegExp( ' ;', 'g' );
+const cleanleerausrufe = new RegExp( ' !', 'g' );
+const cleanleerfrege = new RegExp( ' \\?', 'g' );
+
+//breakdown typographic letiances "Bindestriche und Geviertstriche"
+const cleanklbindstrichvollbreit = new RegExp( '－', 'g' );
+const cleanklbindstrichkurz = new RegExp( '﹣', 'g' );
+const cleanklgeviert = new RegExp( '﹘', 'g' );
+const cleanviertelgeviert = new RegExp( '‐', 'g' );
+const cleanziffbreitergeviert = new RegExp( '‒', 'g' );
+const cleanhalbgeviert = new RegExp( '–', 'g' );
+const cleangeviert = new RegExp( '—', 'g' );
+
+const escspitzeL = new RegExp( '<', 'g' );
+const escspitzeR = new RegExp( '>', 'g' );
+
+
+
+// array of unicode diacritics (relevant for polytonic greek)
+const diacriticsunicodeRegExp = new Array( 
+	new RegExp( '\u{0313}', 'g' ), 
+	new RegExp( "\u{0314}", 'g' ), 
+	new RegExp( "\u{0300}", 'g' ), 
+	new RegExp( "\u{0301}", 'g' ), 
+	new RegExp( "\u{00B4}", 'g' ), 
+	new RegExp( "\u{02CA}", 'g' ), 
+	new RegExp( "\u{02B9}", 'g' ), 
+	new RegExp( "\u{0342}", 'g' ), 
+	new RegExp( "\u{0308}", 'g' ), 
+	new RegExp( "\u{0304}", 'g' ), 
+	new RegExp( "\u{0306}", 'g' ),
+    new RegExp( '’', 'g' ),
+    new RegExp( '\'', 'g' ),
+    new RegExp( '᾽', 'g' ),
+    new RegExp( '´', 'g' ),
+    new RegExp( "‘", 'g' )
+);
+const regJotaSub = new RegExp( '\u{0345}', 'g' );
+// precompiled regular expressions
+/*const strClean1 = new RegExp( '’', 'g' );
+const strClean2 = new RegExp( '\'', 'g' );
+const strClean3 = new RegExp( '᾽', 'g' );
+const strClean4 = new RegExp( '´', 'g' );
+const strClean5 = new RegExp( "‘", 'g' );*/
+const numeringReg1 = new RegExp( '\[[0-9]+\]', 'g' );
+const numeringReg2 = new RegExp( /\[[M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})]+\]/, 'g' );
+
+// precompiled regular expressions of the relevant ligatures 
+const regEstigma = new RegExp( '\u{03DA}', 'g' ); 
+const regEstigmakl = new RegExp( '\u{03DB}', 'g' );
+const regEomikonyplsi = new RegExp( 'ȣ', 'g' );
+const regEomikonyplsiK = new RegExp( 'Ȣ', 'g' );
+const regEUk = new RegExp( 'Ꙋ', 'g' );
+const regEuk = new RegExp( 'ꙋ', 'g' );
+const regEkai = new RegExp( 'ϗ', 'g' );
+const regEKai = new RegExp( 'Ϗ', 'g' );
+const regEl1 = new RegExp( '\u{0223}', 'g' );
+const regEl2 = new RegExp( '\u{0222}', 'g' );
+
+const regEdoppelP = new RegExp( ':', 'g' );
+const regEeinfahP = new RegExp( '\\.', 'g' );
+const regEkomma = new RegExp( ',', 'g' );
+const regEsemiK = new RegExp( ';', 'g' );
+const regEhochP = new RegExp( '·', 'g' );
+const regEausr = new RegExp( '!', 'g' );
+const regEfarge = new RegExp( '\\?', 'g' );
+const regEan1 = new RegExp( '“', 'g' );
+const regEan5 = new RegExp( '„', 'g' );
+const regEan2 = new RegExp( '”', 'g' );
+const regEan3 = new RegExp( '"', 'g' );
+const regEan4 = new RegExp( "'", 'g' );
+const regEan6 = new RegExp( '(\s*)[\∶|\⋮|\·|\⁙|;]+(\s*)', 'g' );
+
+
+const regU1 = new RegExp( "†", 'g' );
+const regU2 = new RegExp( "\\*", 'g' );
+const regU3 = new RegExp( "⋖", 'g' );
+const regU4 = new RegExp( "#", 'g' ); 
+
+const regEtailingsig = new RegExp( "ς", 'g' );
+
+const regEkla1 = new RegExp( "\\(", 'g' );
+const regEkla2 = new RegExp( "\\)", 'g' );
+const regEkla3 = new RegExp( "\\{", 'g' );
+const regEkla4 = new RegExp( "\\}", 'g' );
+const regEkla5 = new RegExp( "\\[", 'g' );
+const regEkla6 = new RegExp( "\\]", 'g' );
+const regEkla7 = new RegExp( "\\<", 'g' );
+const regEkla8 = new RegExp( "\\>", 'g' );
+const regEkla9 = new RegExp( "⌈", 'g' );
+const regEkla10 = new RegExp( "⌉", 'g' );
+const regEkla11 = new RegExp( "‹", 'g' );
+const regEkla12 = new RegExp( "›", 'g' );
+const regEkla13 = new RegExp( "«", 'g' );
+const regEkla14 = new RegExp( "»", 'g' );
+const regEkla15 = new RegExp( "⟦", 'g' );
+const regEkla16 = new RegExp( "⟧", 'g' );
+const regEkla17 = new RegExp( '\u{3008}', 'g' );
+const regEkla18 = new RegExp( '\u{3009}', 'g' );
+const regEkla19 = new RegExp( '\u{2329}', 'g' );
+const regEkla20 = new RegExp( '\u{232A}', 'g' );
+const regEkla21 = new RegExp( '\u{27E8}', 'g' );
+const regEkla22 = new RegExp( '\u{27E9}', 'g' );
+
+const regEuv = new RegExp( "u", 'g' );
+const regEji = new RegExp( "j", 'g' );
+
+const spai1 = new RegExp( '\u{2002}', 'g' );//enspacing
+const spai2 = new RegExp( '\u{2000}', 'g' );//enquad
+
+//original abschrift, Klammerbehandlungfließtext
+//Inschriften Klammersystem
+//https://apps.timwhitlock.info/js/regex#
+/*const lueckeBestimmt = new RegExp( /\[[Ͱ-Ͼἀ-῾|◌̣ ]+\]/, 'g' ); //l0
+const lueckeinZeile = new RegExp( /\[\-\-\-\]/, 'g' ); //klasse l1
+const lueckeinZeile2 = new RegExp(/\[3\]/, 'g' ); //lueckeinZeile, klasse l1
+const lueckeausZeile = new RegExp( /\[\-\-\-\-\-\-\]/, 'g' ); //klasse l2
+const lueckeausZeile2 = new RegExp( /\[6\]/, 'g' ); //Luecke im Umfang einer Zeile, Klasse l2
+const lueckeunbest = new RegExp( /\]\[/, 'g' ); // Klasse l3
+
+const zeilenende = new RegExp( / \/ /, 'g' ); // Klasse l4
+const zeilenendeDigit = new RegExp( / \/ \d+ /, 'g' ); // Klasse l4
+const zeilenanfang = new RegExp( / \| /, 'g' ); // Zeilenanfang, Klasse l5
+const zeilenanfangDigit = new RegExp( / \| \d+ /, 'g' ); // Zeilenanfang, Klasse l5
+const aufabk = new RegExp( /\(\)/, 'g' );  //Auflösung von Abkürzungen, Klasse l6
+const beschaedigt = new RegExp( /\[nurbuchstabenoderleer\]/, 'g' ); //beschädigt oder undeutlich, klasse l7
+const getilgt = new RegExp( /\{\}/, 'g' ); // Tilgung, Klasse l8
+const rasiert = new RegExp( /\[\[\]\]/, 'g' ); //Rasur, Klasse l9
+const ueberschr = new RegExp( /\<\<\>\>/, 'g' ); // Überschrieben, Klasse l10
+const tilgrewrite = new RegExp( /\<\<\[\[\]\]\>\>/, 'g' ); //Tilgung Wiedereinfügung, Klasse l11
+const punktunter = "◌̣ "; //Punkt unter Buchstaben - Buchstabe nur Teilweise erhalten -- später, Klasse l12
+const anzgriechbuch = new RegExp( / \.+ /, 'g' ); //Anzahl unbestimmabrer griechischen Bustaben, Klasse l13
+const anzlatbuchs = new RegExp( / \++ /, 'g' );  //Anzahl unbestimmbarer römsicher Buchstaben, Klasse l14
+const korrdeseditors = new RegExp( /\<\>/, 'g' ); //Korrektur des Editors, Klasse l15
+*/
+//**************************************************
+// Section 0000
+// helper
+//**************************************************
+
 
 function isnumber( maybe ){
     //do romannumbers
@@ -445,7 +455,7 @@ function normarrayk( aarray ){
 function normarrayksiguv( aarray ){
 	let replacearray = new Object( );
 	for( let p in aarray ){
-		replacearray[ sigmaistgleich( deluv( disambiguDIAkritika( p.normalize( analysisNormalform ) ) ) )] = aarray[ p ];
+		replacearray[ sigmaistgleich(ijdelled(deluv( disambiguDIAkritika( p.normalize( analysisNormalform ) ) ) ) )] = aarray[ p ];
 	}
 	return replacearray;
 }
@@ -460,7 +470,7 @@ function normarrayval( aarray ){ // by reference ????
 function normarrayvalsiguv( aarray ){ // by reference ????
     for( let p in aarray ){
         
-        aarray[ p ] = sigmaistgleich(deluv(disambiguDIAkritika( aarray[ p ].normalize( analysisNormalform ))));
+        aarray[ p ] = sigmaistgleich(ijdelled(deluv(disambiguDIAkritika( aarray[ p ].normalize( analysisNormalform )))));
     }
 }
 
@@ -479,8 +489,7 @@ function normatext( text, wichnorm ){
     return text.normalize( wichnorm );
 }
 
-const spai1 = new RegExp( '\u{2002}', 'g' );//enspacing
-const spai2 = new RegExp( '\u{2000}', 'g' );//enquad
+
 function sameallspacing( astr ){
     astr = astr.replace( spai1, ' ' );
     astr = astr.replace( spai2, ' ' );
@@ -558,7 +567,6 @@ function ExpandelisionText( atext ){
 }
 
 function TranslitLatinGreekLetters( astring ){
-
     //
     let wordlevel = delligaturen( astring.trim().normalize( "NFC" ) ).split(" ");
     let greekenized = [ ];
@@ -679,7 +687,9 @@ function basClean( astring ){
 
     // remove hyphens
     let ws = astring.split(" ");
-        let ca = [];
+        let ca = Trennstricheraus( ws );
+        
+        /*
         let halfw = "";
         let secondhalf = "";
         for( let w in ws ){
@@ -710,6 +720,7 @@ function basClean( astring ){
                 }
             }
         }
+        */
         return ca.join( " " );
 }
 
@@ -734,7 +745,6 @@ function replaceWordsfromarray( arr, replacement, strstr ){
 // word leve conversions: 
 // alpha privativum
 // alpha copulativum
-// Klammersysteme
 //******************************************************************************
 
 function AlphaPrivativumCopulativum( aword ){ //just works on NFC and NFKC
@@ -773,8 +783,6 @@ function AlphaPrivativumCopulativumText( atext ){
 }
 
 
-//KLAMMERSYSTEME HIER BEHANDELN
-
 //******************************************************************************
 // Section 1 
 // unicode related comparing and norming, handling of diacritics
@@ -811,7 +819,7 @@ function nodiakinword( aword ){
 // function take a string and deletes diacritical signes, ligatures, remaining interpunction, line breaks, capital letters to small ones, equalizes sigma at the end of greek words, and removes brakets
 function delall( text ){
     if( doUVlatin ){ // convert u to v in classical latin text
-        text = deluv( delklammern( sigmaistgleich( delgrkl( delumbrbine( delligaturen( delinterp( delmakup( delnumbering( delunknown( deldiak(  text)))))))))));
+        text = ijdelled( deluv( delklammern( sigmaistgleich( delgrkl( delumbrbine( delligaturen( delinterp( delmakup( delnumbering( delunknown( deldiak(  text))))))))))));
     } else {
         text = delklammern( sigmaistgleich( delgrkl( delumbrbine( delligaturen( delinterp( delmakup( delnumbering( delunknown( deldiak(  text  ) ) ) ) ) ) ) ) ) );
     }
@@ -892,7 +900,12 @@ function deledklammern( text ){
 }
 // function takes string and replaces u by v, used in classical latin texts
 function deluv( text ){
+    //console.log(text);
     return text.replace( regEuv, "v" );
+}
+
+function delji( text ){
+    return text.replace( regEji, "i" );
 }
 
 //some bundels
@@ -1130,11 +1143,18 @@ function demUsage( atesttext ){
     //console.log( kladelled );
     atttext = atttext + "<br/><br/>"+ str9+"<br/>"+ kladelled;
 
+    
     let uvdelled = deluv( basicres );
     let str10 = "<b>s) Text output latin u-v (repaces all u with v):</b>";
     //console.log( str10 );
     //console.log( uvdelled );
     atttext = atttext + "<br/><br/>"+ str10+"<br/>"+ uvdelled;
+
+    let ijdelled = delji( basicres );
+    let str12 = "<b>s0) Text output latin i-j (repaces all j with i):</b>";
+    //console.log( str10 );
+    //console.log( uvdelled );
+    atttext = atttext + "<br/><br/>"+ str12+"<br/>"+ ijdelled;
 
     let alldelled = delall( basicres );
     let str11 = "<b>t) Text output all deleted (deletes UV, klammern, sigma, grkl, umbrüche, ligaturen, interpunktion, edition numbering, unknown signs, diakritika):</b>";
@@ -1238,6 +1258,8 @@ sigmaistgleich( text ) //equalize tailing sigma
 delklammern( text ) // input stringa nd get it back with no brackets
 
 deluv( text ) // repaces all u with v
+
+delji( text ) // repaces all j with i
 
 Trennstricheraus( array of words ) //input array of words removes hyphenation
 
