@@ -389,31 +389,8 @@ const regEji = new RegExp( "j", 'g' );
 const spai1 = new RegExp( '\u{2002}', 'g' );//enspacing
 const spai2 = new RegExp( '\u{2000}', 'g' );//enquad
 
-//original abschrift, Klammerbehandlungfließtext
-//Inschriften Klammersystem
-//https://apps.timwhitlock.info/js/regex#
-/*const lueckeBestimmt = new RegExp( /\[[Ͱ-Ͼἀ-῾|◌̣ ]+\]/, 'g' ); //l0
-const lueckeinZeile = new RegExp( /\[\-\-\-\]/, 'g' ); //klasse l1
-const lueckeinZeile2 = new RegExp(/\[3\]/, 'g' ); //lueckeinZeile, klasse l1
-const lueckeausZeile = new RegExp( /\[\-\-\-\-\-\-\]/, 'g' ); //klasse l2
-const lueckeausZeile2 = new RegExp( /\[6\]/, 'g' ); //Luecke im Umfang einer Zeile, Klasse l2
-const lueckeunbest = new RegExp( /\]\[/, 'g' ); // Klasse l3
+let satzzeichen = new Array(".", ";", ",", ":", "!", "?", "·");
 
-const zeilenende = new RegExp( / \/ /, 'g' ); // Klasse l4
-const zeilenendeDigit = new RegExp( / \/ \d+ /, 'g' ); // Klasse l4
-const zeilenanfang = new RegExp( / \| /, 'g' ); // Zeilenanfang, Klasse l5
-const zeilenanfangDigit = new RegExp( / \| \d+ /, 'g' ); // Zeilenanfang, Klasse l5
-const aufabk = new RegExp( /\(\)/, 'g' );  //Auflösung von Abkürzungen, Klasse l6
-const beschaedigt = new RegExp( /\[nurbuchstabenoderleer\]/, 'g' ); //beschädigt oder undeutlich, klasse l7
-const getilgt = new RegExp( /\{\}/, 'g' ); // Tilgung, Klasse l8
-const rasiert = new RegExp( /\[\[\]\]/, 'g' ); //Rasur, Klasse l9
-const ueberschr = new RegExp( /\<\<\>\>/, 'g' ); // Überschrieben, Klasse l10
-const tilgrewrite = new RegExp( /\<\<\[\[\]\]\>\>/, 'g' ); //Tilgung Wiedereinfügung, Klasse l11
-const punktunter = "◌̣ "; //Punkt unter Buchstaben - Buchstabe nur Teilweise erhalten -- später, Klasse l12
-const anzgriechbuch = new RegExp( / \.+ /, 'g' ); //Anzahl unbestimmabrer griechischen Bustaben, Klasse l13
-const anzlatbuchs = new RegExp( / \++ /, 'g' );  //Anzahl unbestimmbarer römsicher Buchstaben, Klasse l14
-const korrdeseditors = new RegExp( /\<\>/, 'g' ); //Korrektur des Editors, Klasse l15
-*/
 //**************************************************
 // Section 0000
 // helper
@@ -455,7 +432,7 @@ function normarrayk( aarray ){
 function normarrayksiguv( aarray ){
 	let replacearray = new Object( );
 	for( let p in aarray ){
-		replacearray[ sigmaistgleich(ijdelled(deluv( disambiguDIAkritika( p.normalize( analysisNormalform ) ) ) ) )] = aarray[ p ];
+		replacearray[ sigmaistgleich(delji(deluv( disambiguDIAkritika( p.normalize( analysisNormalform ) ) ) ) )] = aarray[ p ];
 	}
 	return replacearray;
 }
@@ -470,7 +447,7 @@ function normarrayval( aarray ){ // by reference ????
 function normarrayvalsiguv( aarray ){ // by reference ????
     for( let p in aarray ){
         
-        aarray[ p ] = sigmaistgleich(ijdelled(deluv(disambiguDIAkritika( aarray[ p ].normalize( analysisNormalform )))));
+        aarray[ p ] = sigmaistgleich(delji(deluv(disambiguDIAkritika( aarray[ p ].normalize( analysisNormalform )))));
     }
 }
 
@@ -819,7 +796,7 @@ function nodiakinword( aword ){
 // function take a string and deletes diacritical signes, ligatures, remaining interpunction, line breaks, capital letters to small ones, equalizes sigma at the end of greek words, and removes brakets
 function delall( text ){
     if( doUVlatin ){ // convert u to v in classical latin text
-        text = ijdelled( deluv( delklammern( sigmaistgleich( delgrkl( delumbrbine( delligaturen( delinterp( delmakup( delnumbering( delunknown( deldiak(  text))))))))))));
+        text = delji( deluv( delklammern( sigmaistgleich( delgrkl( delumbrbine( delligaturen( delinterp( delmakup( delnumbering( delunknown( deldiak(  text))))))))))));
     } else {
         text = delklammern( sigmaistgleich( delgrkl( delumbrbine( delligaturen( delinterp( delmakup( delnumbering( delunknown( deldiak(  text  ) ) ) ) ) ) ) ) ) );
     }
@@ -1151,10 +1128,10 @@ function demUsage( atesttext ){
     atttext = atttext + "<br/><br/>"+ str10+"<br/>"+ uvdelled;
 
     let ijdelled = delji( basicres );
-    let str12 = "<b>s0) Text output latin i-j (repaces all j with i):</b>";
+    let ijstr = "<b>s0) Text output latin i-j (repaces all j with i):</b>";
     //console.log( str10 );
     //console.log( uvdelled );
-    atttext = atttext + "<br/><br/>"+ str12+"<br/>"+ ijdelled;
+    atttext = atttext + "<br/><br/>"+ ijstr+"<br/>"+ ijdelled;
 
     let alldelled = delall( basicres );
     let str11 = "<b>t) Text output all deleted (deletes UV, klammern, sigma, grkl, umbrüche, ligaturen, interpunktion, edition numbering, unknown signs, diakritika):</b>";
