@@ -1058,9 +1058,9 @@ def demUsage( ):
     print( comb )
     
     #klammsys = delKLAMMSYS( atesttext );
-    klammsys = hervKLAMMSYS( atesttext );
-    print( ree+"w) Editions Klammerung (delet leidener Klammersystem):" ,defo)
-    print( klammsys )   
+    #klammsys = hervKLAMMSYS( atesttext );
+    #print( ree+"w) Editions Klammerung (delet leidener Klammersystem):" ,defo)
+    #print( klammsys )   
 
 
 def testprivatalpha():
