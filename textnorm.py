@@ -3,16 +3,17 @@
 
 #**************************************************
 # 2020 text normalisation Python3 Lib, Prof. Charlotte Schubert Alte Geschichte, Leipzig
+# DEF: A text normalization is everything done to equalize encoding, appearance 
+# and composition of a sequence of signs called a string (adopted as text). A sequence is a orders set.
+# A pattern is a distinguished sequence. There are two goals of 
+# normalization: The first is a common ground of signs and the second is a 
+# reduction of differences between two sequences of signs.  Not every 
+# normalization step is useful for every comparison task! Remember: 
+# Sometimes it is important to not equalize word forms (sign members of a sequence) and 
+# sometimes it is important. 
 
 
 '''
-DEF: A text normalization is everything done to equalize encoding, appearance 
-and composition of a sequence of signs called a text. There are two goals of 
-normalization. The first is a common ground of signs  and the second is a 
-reduction of differences between two sequences of signs.  Not every 
-normalization step is useful for every comparison task! Remember: 
-Sometimes it is important to not equalize word forms and 
-sometimes it is important. 
 GPLv3 copyrigth
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -36,6 +37,7 @@ true = True
 doUVlatin = false; 
 analysisNormalform = "NFKD";
 dispnormalform = "NFC";
+inschrift = True
 
 notprivalpha = [];#["ἀΐω"];
 #"de" Akzente richtig, oder falsch????
@@ -349,10 +351,13 @@ def sameallspacing( astr ):
     astr = re.sub( spai2, ' ', astr)
     return astr
 
+diam1 = re.compile( "\u0027".encode("utf-8").decode("utf-8") )
+diam2 = re.compile( r"'" )
+diam3 = re.compile( "\u1FBD".encode("utf-8").decode("utf-8") )
 def disambiguDIAkritika( astr ):
-    astr = "\u2019".join( astr.split( "\u0027" ) ) #typogra korrektes postroph;
-    astr = "\u2019".join( astr.split( "'" ) )
-    astr = "\u2019".join( astr.split( "\u1FBD" ) )
+    astr = re.sub( diam1, "\u2019", astr)
+    astr = re.sub( diam2, "\u2019", astr)
+    astr = re.sub( diam3, "\u2019", astr)
     return astr
 
 def disambiguadashes( astring ):
@@ -385,7 +390,7 @@ def ExtractDiafromBuchstText( atext ):
         t +=  "[ "+", ".join( ExtractDiafromBuchst( spli[ i ] ) )+" ]"
     return t
 
-def replaceBehauchung( adiakstring ):
+def replaceBehauchung( adiakstring ): #Latin
     if( "῾" in adiakstring ):
         return "h"+adiakstring.replace( "῾","" );
     else:
@@ -464,6 +469,7 @@ regEbr1 = re.compile( "<br/>" );
 regEbr2 = re.compile( "<br>" )
 cleanNEWL = re.compile( '\\n' )
 cleanRETL = re.compile( '\\r' )
+cleanTA = re.compile( '\\t' )
 cleanstrangehochpunkt =re.compile( r'‧' )
 cleanthisbinde =re.compile( r'—' )
 cleanthisleer =re.compile( '\xa0'.encode("utf-8").decode("utf-8") ) #byte string is not allowed - 
@@ -570,24 +576,39 @@ def hasKEY( alist, thekey ): #fkt should move
         return False
 
 def AlphaPrivativumCopulativum( aword ):
-    if( not aword in notprivalpha ):
+    if( aword in notprivalpha ):
+        return aword
+    else:
+        if( len( aword ) >= 2 ):
+            z = unicodedata.normalize( analysisNormalform, aword[1] ) 
+            if( "α" in unicodedata.normalize( analysisNormalform, aword[0] ) and 
+             ("ι" in z or "υ" in z or "ε" in z or "ο" in z or "α" in z or "ω" in z or "η")
+                and
+                "\u0308" in z ):
+                return aword[0] +" "+ aword[1:]
+            else:
+                return aword
+        else:
+        
+            return aword
+        '''
         buchs = list( delall( aword ) )
-        if( len( buchs ) == 0 ):
+        if( len( buchs ) < 2 ):
             return aword
         if( buchs[0] == "α" ): #erste Buchstabe alpha
             if( hasKEY( vokaleGRI , buchs[1] ) ): # zweiter ein Vokal
                 b2dia = ExtractDiafromBuchst(aword[1])[0]
-                #console.log("lll",b2dia)
                 if( "\u0308" in  b2dia ): #zweiter Buchstabe mit Trema, erste Buchstabe mit spiritus lenis
                     return aword[0] +" "+ aword[1:] 
                 else:
                     return aword
             else:
                 return aword
+        
         else:
             return aword
-    else:
-        return aword
+        '''
+        
 def AlphaPrivativumCopulativumText( atext ):
     t = ""
     spli = atext.split( " " )
@@ -612,7 +633,7 @@ def testprivatalpha():
 #**************************************************
 
 # array of unicode diacritics (relevant for polytonic greek)
-diacriticsunicodeRegExp = [ 
+diacriticsunicodeRegExp = [  
 	re.compile('\u0313'.encode("utf-8").decode("utf-8") ), 
 	re.compile("\u0314".encode("utf-8").decode("utf-8") ), 
 	re.compile("\u0300".encode("utf-8").decode("utf-8") ), 
@@ -628,7 +649,8 @@ diacriticsunicodeRegExp = [
 # def takes string, splits it with jota subscriptum and joins the string again using jota adscriptum
 regJotaSub = re.compile( '\u0345'.encode("utf-8").decode("utf-8") )
 def iotasubiotoad( aword ):
- 	return "ι".join( aword.split( u'\u0345' ) );
+    return re.sub( regJotaSub, "ι", aword )
+ 	#return "ι".join( aword.split( u'\u0345' ) );
 
 # def takes "one word"
 def ohnediakritW( aword ):
@@ -641,17 +663,40 @@ def capitali( astring ):
 
 # precompiled regular expressions
 strClean1 = re.compile( r'’' )
-strClean2 = re.compile( r'\'' )
+strClean2 = re.compile( r'\'')
 strClean3 = re.compile( r'᾽' )
-strClean4 = re.compile( r'´' )
+#strClean4 = re.compile( r'´' )#Akut
+#strClean5 = re.compile( r'˝' )#Doppelakut
+#strClean6 = re.compile( r'˘' )#Breve
+#strClean7 = re.compile('\u032E'.encode("utf-8").decode("utf-8") )#Breve darunter
+#strClean8 = re.compile( r'¸' )#Cedille
+#strClean9 = re.compile( r'`' )#Gravis
+#strClean10 = re.compile( '\u0314'.encode("utf-8").decode("utf-8") )#Spiritus Asper
+#strClean11 = re.compile( '\u0313'.encode("utf-8").decode("utf-8") )#Spiritus Lenis
+#strClean12 = re.compile( '\u0342'.encode("utf-8").decode("utf-8") )#Circumflex
+#strClean13 = re.compile( r'~' )#Tilde
+#strClean14 = re.compile( r'¨' )#Trema
+
+#Haken, Hatschek
 
 # def takes a string replaces some signs with regexp and oth
 def nodiakinword( aword ):
-    aword = re.sub(strClean1, "", aword)
-    aword = re.sub(strClean2, "", aword)
-    aword = re.sub(strClean3, "", aword)
-    aword = re.sub(strClean4, "", aword)
     spt = unicodedata.normalize( analysisNormalform, aword )
+    spt = re.sub(strClean1, "", spt)
+    spt = re.sub(strClean2, "", spt)
+    spt = re.sub(strClean3, "", spt)
+    #spt = re.sub(strClean4, "", spt)
+    #aword = re.sub(strClean5, "", aword)
+    #aword = re.sub(strClean6, "", aword)
+    #aword = re.sub(strClean7, "", aword)
+    #aword = re.sub(strClean8, "", aword)
+    #aword = re.sub(strClean9, "", aword)
+    #aword = re.sub(strClean10, "", aword)
+    #aword = re.sub(strClean11, "", aword)
+    #aword = re.sub(strClean12, "", aword)
+    #aword = re.sub(strClean13, "", aword)
+    #aword = re.sub(strClean14, "", aword)
+    
     return iotasubiotoad( ohnediakritW( spt ) )
 
 #**************************************************
@@ -660,10 +705,13 @@ def nodiakinword( aword ):
 
 # def take a string and deletes diacritical signes, ligatures, remaining interpunction, line breaks, capital letters to small ones, equalizes sigma at the end of greek words, and removes brakets
 def delall( text ):
+    #print(text)
     if( doUVlatin ): # convert u to v in classical latin text
         text = delji( deluv( delklammern( sigmaistgleich( delgrkl( delligaturen( delinterp( delmakup( delumbrbine( delnumbering( delunknown( deldiak(  text))))))))))))
     else:
         text = delklammern( sigmaistgleich( delgrkl( delligaturen( delinterp( delmakup( delumbrbine( delnumbering( delunknown( deldiak(  text  ) ) ) ) ) ) ) )))
+    #print("###############")
+    #print(text)
     return text
 
 #del numbering
@@ -750,6 +798,7 @@ regU4 = re.compile( r"#" )
 regU5 = re.compile( r"⸎" )
 regU6 = re.compile( r"☽" )
 regU7 = re.compile( r"☾" )
+regU8 = re.compile( r"⁙" )
 def delunknown( text ):
     text = re.sub(regU1, "", text)
     text = re.sub(regU2, "", text)
@@ -758,19 +807,22 @@ def delunknown( text ):
     text = re.sub(regU5, "", text)
     text = re.sub(regU6, "", text)
     text = re.sub(regU7, "", text)
+    text = re.sub(regU8, "", text)
     return text
 
 # def takes string and replace html line breakes
 def delumbrbine( text ):
-    text = re.sub(regEbr1, "", text)
-    text = re.sub(regEbr2, "", text)
-    return text
+    #text = re.sub(regEbr1, "", text)
+    #text = re.sub(regEbr2, "", text)
+    #return text
+    return umbrtospace( text )
 
 def umbrtospace( text ):
     text = re.sub(cleanNEWL, " ", text)
     text = re.sub(cleanRETL, " ", text)
+    text = re.sub(cleanTA, " ", text)
     text = re.sub(regEbr1, " ", text)
-    text = re.sub(regEbr2, " ", text);
+    text = re.sub(regEbr2, " ", text)
     return text
 
 # first version, a little more...
@@ -871,12 +923,16 @@ regEji = re.compile( r"j" )
 def delji( text ):
     return re.sub( regEji, "i", text );
 
+def TrennstricherausText( astring ):
+    return " ".join( Trennstricheraus( disambiguadashes(astring).split( " " ) ) )
+     
 def Trennstricheraus( wliste ): #\n version
     ersterteil = ""
     zweiterteil = ""
     neueWLISTE = []
     lele = len( wliste )
     for w in range( lele ):
+        #print(wliste[ w ], ersterteil, zweiterteil)
         if( len( ersterteil ) == 0 ):
             if( "-" in wliste[ w ] ):
                 eUNDz = wliste[ w ].split( "-" )
@@ -943,15 +999,41 @@ def GRvorbereitungT( dtext ):
     diewo = Interpunktiongetrennt( diewo )
     #diewo = Klammernbehandeln( diewo )
     return diewo
+    
+#**************************************************
+# Section 3: other 
+#**************************************************   
 
-unterPu = re.compile( r"◌̣ " )
+unterPuz = re.compile( r"◌̣ " )
+unterPu = re.compile( "\u0323".encode("utf-8").decode("utf-8") )
 def delUnterpunkt( text ):
+    text = normatext( text, analysisNormalform )
+    return re.sub(unterPuz, "", re.sub(unterPu, "",text))
+
+def delwithnormUnterpunkt( text ):
     return re.sub(unterPu, "",text)
+
+def delLettLat( astring ):
+    return astring
+    
+def delaraNumerals( astring ):
+    return astring
+    
+regO1 = re.compile( r'‘' )
+regO2 = re.compile( r'|' )
+regO3 = re.compile( r'–' )
+regO4 = re.compile( r'⏑' )
+def signsleft( astring ):
+    t = re.sub(regO1, "",astring)  
+    t = re.sub(regO2, "",t)
+    t = re.sub(regO3, "",t)
+    t = re.sub(regO4, "",t)  
+    return t
 
 # USAGE
 def demUsage( ):
 
-    atesttext = "„[IX]” ⁙ ἀλλ’ ἑτέραν τινὰ φύσιν ἄπειρον', ἐξ ἧς ἅπαντας γίνεσθαι τοὺς οὐρανοὺς καὶ τοὺς ἐν αὐτοῖς κόσμους· ἐξ ὧν δὲ ἡ γένεσίς ἐστι τοῖς οὖσι, καὶ τὴν φθορὰν εἰς ταῦτα γίνεσθαι κατὰ τὸ χρεών. διδόναι γὰρ αὐτὰ δίκην καὶ τίσιν ἀλλήλοις τῆς ἀδικίας κατὰ τὴν τοῦ χρόνου τάξιν, ποιητικωτέροις οὕτως ὀνόμασιν αὐτὰ λέγων· δῆλον δὲ ὅτι τὴν εἰς ἄλληλα μεταβολὴν τῶν τεττάρων στοιχείων οὗτος θεασάμενος οὐκ ἠξίωσεν ἕν τι τούτων ὑποκείμενον ποιῆσαι, ἀλλά τι ἄλλο παρὰ ταῦτα. οὗτος δὲ οὐκ ἀλλοιουμένου τοῦ στοιχείου τὴν γένεσιν ποιεῖ, ἀλλ’ ἀποκρινομένων τῶν ἐναντίων διὰ τῆς ἀιδίου κινή- σεως· 1 Summá pecúniae, quam dedit in [bla bla bla] aerarium vel plebei Romanae vel dimissis militibus=> denarium sexiens milliens. 2 Opera fecit nova § aedem Martis, Iovis Tonantis et Feretri, Apollinis, díví Iúli, § Quirini, § Minervae, Iunonis Reginae, Iovis Libertatis, Larum, deum Penátium, § Iuventatis, Matris deum, Lupercal, pulvinar ad [11] circum, § cúriam cum chalcidico, forum Augustum, basilicam 35 Iuliam, theatrum Marcelli, § porticus . . . . . . . . . . , nemus trans Tiberím Caesarum. § 3 Refécit Capitolium sacrasque aedes numero octoginta duas, theatrum Pompeí, aquarum rivos, viam Flaminiam.  Ϗ ϗ ϚϛȢȣꙊꙋἀἁἂἃἄἅἆἇἈἉἊἋἌἍἎἏἐἑἒἓἔἕἘἙἚἛἜἝἠἡἢἣἤἥἦἧἨἩἪἫἬἭἮἯἰἱἲἳἴἵἶἷἸἹἺἻἼἽἾἿὀὁὂὃὄὅὈὉὊὋὌὍὐὑὒὓὔὕὖὗὙὛὝὟὠὡὢὣὤὥὦὧὨὩὪὫὬὭὮὯὰάὲέὴήὶίὸόὺύὼώ	ᾀᾁᾂᾃᾄᾅᾆᾇᾈᾉᾊᾋᾌᾍᾎᾏᾐᾑᾒᾓᾔᾕᾖᾗᾘᾙᾚᾛᾜᾝᾞᾟᾠᾡᾢᾣᾤᾥᾦᾧᾨᾩᾪᾫᾬᾭᾮᾯᾰᾱᾲᾳᾴᾶᾷᾸᾹᾺΆᾼ᾽ι᾿῀῁ῂῃῄῆῇῈΈῊΉῌ῍῎῏ῐῑῒΐῖῗῘῙῚΊ῝῞῟ῠῡῢΰῤῥῦῧῨῩῪΎῬ῭΅`ῲῳῴῶῷῸΌῺΏῼ´῾ͰͱͲͳʹ͵Ͷͷͺͻͼͽ;Ϳ΄΅Ά·ΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϏϐϑϒϓϔϕϖϗϘϙϚϛϜϝϞϟϠϡϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰϱϲϳϴϵ϶ϷϸϹϺϻϼϽϾϿ Αι αι γγ γκ γξ γχ ου Υι υι ἄϋλος αὐλός  τί φῄς; γραφὴν σέ τις, ὡς ἔοικε, γέγραπται οὐ γὰρ ἐκεῖνό γε καταγνώσομαι, ὡς σὺ ἕτερον. δ̣[ὲ κ]αὶ"
+    atesttext = "„[IX]” ⁙ ἀλλ’ ἑτέραν τινὰ φύσιν ἄπειρον', ἐξ ἧς ἅπαντας γίνεσθαι τοὺς οὐρανοὺς καὶ τοὺς ἐν αὐτοῖς κόσμους· ἐξ ὧν δὲ ἡ γένεσίς ἐστι τοῖς οὖσι, καὶ τὴν φθορὰν εἰς ταῦτα γίνεσθαι κατὰ τὸ χρεών. διδόναι γὰρ αὐτὰ δίκην καὶ τίσιν ἀλλήλοις τῆς ἀδικίας κατὰ τὴν τοῦ χρόνου τάξιν, ποιητικωτέροις οὕτως ὀνόμασιν αὐτὰ λέγων· δῆλον δὲ ὅτι τὴν εἰς ἄλληλα μεταβολὴν τῶν τεττάρων στοιχείων οὗτος θεασάμενος οὐκ ἠξίωσεν ἕν τι τούτων ὑποκείμενον ποιῆσαι, ἀλλά τι ἄλλο παρὰ ταῦτα. οὗτος δὲ οὐκ ἀλλοιουμένου τοῦ στοιχείου τὴν γένεσιν ποιεῖ, ἀλλ’ ἀποκρινομένων τῶν ἐναντίων διὰ τῆς ἀιδίου κινή- \nσεως· 1 Summá pecúniae, quam dedit in [bla bla bla] aerarium vel plebei Romanae vel dimissis militibus=> denarium sexiens milliens. 2 Opera fecit nova § aedem Martis, Iovis Tonantis et Feretri, Apollinis, díví Iúli, § Quirini, § Minervae, Iunonis Reginae, Iovis Libertatis, Larum, deum Penátium, § Iuventatis, Matris deum, Lupercal, pulvinar ad [11] circum, § cúriam cum chalcidico, forum Augustum, basilicam 35 Iuliam, theatrum Marcelli, § porticus . . . . . . . . . . , nemus trans Tiberím Caesarum. § 3 Refécit Capitolium sacrasque aedes numero octoginta duas, theatrum Pompeí, aquarum rivos, viam Flaminiam.  Ϗ ϗ ϚϛȢȣꙊꙋἀἁἂἃἄἅἆἇἈἉἊἋἌἍἎἏἐἑἒἓἔἕἘἙἚἛἜἝἠἡἢἣἤἥἦἧἨἩἪἫἬἭἮἯἰἱἲἳἴἵἶἷἸἹἺἻἼἽἾἿὀὁὂὃὄὅὈὉὊὋὌὍὐὑὒὓὔὕὖὗὙὛὝὟὠὡὢὣὤὥὦὧὨὩὪὫὬὭὮὯὰάὲέὴήὶίὸόὺύὼώ	ᾀᾁᾂᾃᾄᾅᾆᾇᾈᾉᾊᾋᾌᾍᾎᾏᾐᾑᾒᾓᾔᾕᾖᾗᾘᾙᾚᾛᾜᾝᾞᾟᾠᾡᾢᾣᾤᾥᾦᾧᾨᾩᾪᾫᾬᾭᾮᾯᾰᾱᾲᾳᾴᾶᾷᾸᾹᾺΆᾼ᾽ι᾿῀῁ῂῃῄῆῇῈΈῊΉῌ῍῎῏ῐῑῒΐῖῗῘῙῚΊ῝῞῟ῠῡῢΰῤῥῦῧῨῩῪΎῬ῭΅`ῲῳῴῶῷῸΌῺΏῼ´῾ͰͱͲͳʹ͵Ͷͷͺͻͼͽ;Ϳ΄΅Ά·ΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϏϐϑϒϓϔϕϖϗϘϙϚϛϜϝϞϟϠϡϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰϱϲϳϴϵ϶ϷϸϹϺϻϼϽϾϿ Αι αι γγ γκ γξ γχ ου Υι υι ἄϋλος αὐλός  τί φῄς; γραφὴν σέ τις, ὡς ἔοικε, γέγραπται οὐ γὰρ ἐκεῖνό γε καταγνώσομαι, ὡς σὺ ἕτερον. δ̣[ὲ κ]αὶ \nμεγάλασ οὔσασ θνη‐\nτοὶ καὶ σμικροὶ παντελῶσ ὄντεσ καὶ οὔτε τὰ μεγάλα αἴσῠλος ἀϊδής"
     
     ree =  "\033[33;2;47m" # Green Text
     defo = "\033[m" # reset to the defaults
@@ -991,6 +1073,10 @@ def demUsage( ):
     al = AlphaPrivativumCopulativumText( atesttext ) #Normal form composed!!!
     print( ree+"g) Alpha privativum  / copulativum (takes utf8 greek and splits the alpha privativum and copulativum from wordforms):",defo)
     print( al )
+    
+    ael = ExpandelisionText( al ) #Normal form composed!!!
+    print( ree+"gg) Elisions:",defo)
+    print( ael )
 
     jo = iotasubiotoad( testnorm ) #Normal form composed!!!
     print( ree+"h) JOTA (takes greek utf8 string and repleces jota subscriptum with jota ad scriptum):",defo)
@@ -1049,7 +1135,7 @@ def demUsage( ):
     print( ree+"t) Text output all deleted (deletes UV, klammern, sigma, grkl, umbrüche, ligaturen, interpunktion, edition numbering, unknown signs, diakritika):" ,defo)
     print( alldelled )
 
-    tre = Trennstricheraus( testnorm.split( " " ) )
+    tre = TrennstricherausText( testnorm )
     print( ree+"u) Text output no hypens (input array of words removes hyphenation):" ,defo)
     print( tre )
 
@@ -1073,7 +1159,9 @@ def testprivatalpha():
 
     
 if __name__ == "__main__":
-    demUsage( )
+    #demUsage( )
+    
+    print("main textnorm")
 
 
 ##******************************************************************************
@@ -1120,3 +1208,4 @@ GRvorbereitungT( text ) # input a string and get a combination of diakritica dis
 '''
 
 #eof
+
