@@ -360,6 +360,10 @@ def disambiguDIAkritika( astr ):
     astr = re.sub( diam3, "\u2019", astr)
     return astr
 
+def gravisakut( astr ):
+    astring = re.sub( diacriticsunicodeRegExp[10], "\u00B4", astring )
+    return astring
+
 def disambiguadashes( astring ):
     astring = re.sub( cleangeviert, '-', astring)
     astring = re.sub( cleanhalbgeviert, '-', astring)
