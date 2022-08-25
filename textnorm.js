@@ -115,7 +115,7 @@ const ronum = {//not perfect
 "li" :1, 
 "lii" :1, 
 "liii" :1, 
-"liv" :1, 
+//"liv" :1, 
 "lv" :1, 
 "lvi" :1, 
 "lvii" :1, 
@@ -310,6 +310,8 @@ const diacriticsunicodeRegExp = new Array(
 	new RegExp( "\u{0308}", 'g' ), 
 	new RegExp( "\u{0304}", 'g' ), 
 	new RegExp( "\u{0306}", 'g' ),
+    new RegExp( "\u{2CF0}", 'g' ),
+    new RegExp( "\u{2CF1}", 'g' ),
     new RegExp( '’', 'g' ),
     new RegExp( '\'', 'g' ),
     new RegExp( '᾽', 'g' ),
@@ -400,11 +402,13 @@ let satzzeichen = new Array(".", ";", ",", ":", "!", "?", "·");
 function isnumber( maybe ){
     //do romannumbers
     const maymay = parseInt(maybe);
+    const lmaybe = maybe.toLowerCase();
+    
     if( !isNaN( maymay ) ){
         return true;
-    } else if( maybe in ronum ){
+    } else if( lmaybe in ronum ){
         return true;     
-    } else if( maybe in grnum ){
+    } else if( lmaybe in grnum ){
         return true;
     }
     return false;
@@ -497,7 +501,7 @@ function ExtractDiafromBuchst( buchst ){ //input as string
     let d = [];
     for( let t in toitter ){
         let co =  toitter[t].toLowerCase( );
-        if( buchstGRI[ co ] || buchsCoptic[ co ] || buchstLAT[ co ] ){
+        if( buchstGRI[ co ] || buchsCoptic[ co ] || buchstLAT[ co ] ){ // defined in textdecomp
             b.push( toitter[t] );
         } else {
             d.push( toitter[t] );
@@ -866,6 +870,16 @@ function sigmaistgleich( text ){
     return text.replace(regEtailingsig, "σ");
 }
 
+// function takes string and converts ä Ä ü Ü ö Ö
+const regae = new RegExp( 'ä', 'g' );
+const regAE = new RegExp( 'Ä', 'g' );
+const regoe = new RegExp( 'ö', 'g' );
+const regOE = new RegExp( 'Ö', 'g' );
+const regue = new RegExp( 'ü', 'g' );
+const regUE = new RegExp( 'Ü', 'g' );
+function convumlau( text ){
+    return text.replace(regae, "ae").replace(regAE, "Ae").replace(regoe, "oe").replace(regOE, "Oe").replace(regue, "ue").replace(regUE, "Ue");
+}
 
 // function take sstring and replaces the brakets -- do not run this before the Klammersystem fkt
 function delklammern( text ){
@@ -1253,3 +1267,4 @@ GRvorbereitungT( text ) // input a string and get a combination of diakritica di
 
 */
 //eof
+
