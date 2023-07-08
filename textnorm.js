@@ -115,7 +115,7 @@ const ronum = {//not perfect
 "li" :1, 
 "lii" :1, 
 "liii" :1, 
-//"liv" :1, 
+"liv" :1, 
 "lv" :1, 
 "lvi" :1, 
 "lvii" :1, 
@@ -267,12 +267,14 @@ const grnum = {//not perfect
 "ρ" : 1
 };
 //regexp section
-const cleanhtmltags = new RegExp( '<(.*?)>', 'g' );
+const cleanhtmltags = new RegExp( '<(?:.|[\n\s\t\.\:])*?>', 'g' );
 const cleanhtmlformat1 = new RegExp( '&nbsp;', 'g' );
 const regEbr1 = new RegExp( '<br/>', 'g' ); 
 const regEbr2 = new RegExp( '<br>', 'g' );
+const reglb = new RegExp( '<lb.*?>', 'g' );
 const cleanNEWL = new RegExp( '\n', 'g' );
 const cleanRETL = new RegExp( '\r', 'g' );
+const cleanTAB = new RegExp( '\t', 'g' );
 const cleanstrangehochpunkt = new RegExp( '‧', 'g' );
 const cleanthisbinde = new RegExp( '—', 'g' );
 const cleanthisleer = new RegExp( '\xa0', 'g' );
@@ -310,8 +312,6 @@ const diacriticsunicodeRegExp = new Array(
 	new RegExp( "\u{0308}", 'g' ), 
 	new RegExp( "\u{0304}", 'g' ), 
 	new RegExp( "\u{0306}", 'g' ),
-    new RegExp( "\u{2CF0}", 'g' ),
-    new RegExp( "\u{2CF1}", 'g' ),
     new RegExp( '’', 'g' ),
     new RegExp( '\'', 'g' ),
     new RegExp( '᾽', 'g' ),
@@ -359,17 +359,22 @@ const regU1 = new RegExp( "†", 'g' );
 const regU2 = new RegExp( "\\*", 'g' );
 const regU3 = new RegExp( "⋖", 'g' );
 const regU4 = new RegExp( "#", 'g' ); 
+const regU5 = new RegExp( "§", 'g');
+const regU6 = new RegExp( "⁑", 'g');
 
 const regEtailingsig = new RegExp( "ς", 'g' );
 
-const regEkla1 = new RegExp( "\\(", 'g' );
-const regEkla2 = new RegExp( "\\)", 'g' );
-const regEkla3 = new RegExp( "\\{", 'g' );
-const regEkla4 = new RegExp( "\\}", 'g' );
-const regEkla5 = new RegExp( "\\[", 'g' );
-const regEkla6 = new RegExp( "\\]", 'g' );
-const regEkla7 = new RegExp( "\\<", 'g' );
-const regEkla8 = new RegExp( "\\>", 'g' );
+const regEuv = new RegExp( "u", 'g' );
+const regEji = new RegExp( "j", 'g' );
+
+const regEkla1 = new RegExp( /\(/, 'g' );
+const regEkla2 = new RegExp( /\)/, 'g' );
+const regEkla3 = new RegExp( /\{/, 'g' );
+const regEkla4 = new RegExp( /\}/, 'g' );
+const regEkla5 = new RegExp( /\[/, 'g' );
+const regEkla6 = new RegExp( /\]/, 'g' );
+const regEkla7 = new RegExp( '\u{003C}', 'g' ); //less than, THAT SEEM NOT TO WORK
+const regEkla8 = new RegExp( /\>/, 'g' ); //THAT SEEM NOT TO WORK, without escape same same ????
 const regEkla9 = new RegExp( "⌈", 'g' );
 const regEkla10 = new RegExp( "⌉", 'g' );
 const regEkla11 = new RegExp( "‹", 'g' );
@@ -385,9 +390,6 @@ const regEkla20 = new RegExp( '\u{232A}', 'g' );
 const regEkla21 = new RegExp( '\u{27E8}', 'g' );
 const regEkla22 = new RegExp( '\u{27E9}', 'g' );
 
-const regEuv = new RegExp( "u", 'g' );
-const regEji = new RegExp( "j", 'g' );
-
 const spai1 = new RegExp( '\u{2002}', 'g' );//enspacing
 const spai2 = new RegExp( '\u{2000}', 'g' );//enquad
 
@@ -402,13 +404,11 @@ let satzzeichen = new Array(".", ";", ",", ":", "!", "?", "·");
 function isnumber( maybe ){
     //do romannumbers
     const maymay = parseInt(maybe);
-    const lmaybe = maybe.toLowerCase();
-    
     if( !isNaN( maymay ) ){
         return true;
-    } else if( lmaybe in ronum ){
+    } else if( maybe in ronum ){
         return true;     
-    } else if( lmaybe in grnum ){
+    } else if( maybe in grnum ){
         return true;
     }
     return false;
@@ -501,7 +501,7 @@ function ExtractDiafromBuchst( buchst ){ //input as string
     let d = [];
     for( let t in toitter ){
         let co =  toitter[t].toLowerCase( );
-        if( buchstGRI[ co ] || buchsCoptic[ co ] || buchstLAT[ co ] ){ // defined in textdecomp
+        if( buchstGRI[ co ] || buchsCoptic[ co ] || buchstLAT[ co ] ){
             b.push( toitter[t] );
         } else {
             d.push( toitter[t] );
@@ -664,7 +664,7 @@ function spitzeklammernHTML( astr ){
 
 //basic equalisation and hypenation reversion
 function basClean( astring ){
-    astring = astring.replace(cleanNEWL, " <br/>").replace(cleanRETL, " <br/>").replace(cleanstrangehochpunkt,"·").replace(cleanthisbinde," — ").replace( cleanthisleer, ' ').replace( cleanleerpunkt, '.').replace( cleanleerdoppelpunkt, ':').replace( cleanleerkoma, ',').replace( cleanleersemik, ';').replace( cleanleerausrufe, '!').replace( cleanleerfrege, '?').replace(cleangeviert, '-').replace(cleanhalbgeviert, '-').replace(cleanziffbreitergeviert, '-').replace(cleanviertelgeviert, '-').replace(cleanklgeviert, '-').replace(cleanklbindstrichkurz, '-').replace(cleanklbindstrichvollbreit, '-');
+    astring = disambiguadashes( astring.replace(cleanNEWL, " <br/>").replace(cleanRETL, " <br/>").replace(cleanstrangehochpunkt,"·").replace(cleanthisbinde," — ").replace( cleanthisleer, ' ').replace( cleanleerpunkt, '.').replace( cleanleerdoppelpunkt, ':').replace( cleanleerkoma, ',').replace( cleanleersemik, ';').replace( cleanleerausrufe, '!').replace( cleanleerfrege, '?').replace(cleangeviert, '-').replace(cleanhalbgeviert, '-').replace(cleanziffbreitergeviert, '-').replace(cleanviertelgeviert, '-').replace(cleanklgeviert, '-').replace(cleanklbindstrichkurz, '-').replace(cleanklbindstrichvollbreit, '-'));
 
     // remove hyphens
     let ws = astring.split(" ");
@@ -800,9 +800,9 @@ function nodiakinword( aword ){
 // function take a string and deletes diacritical signes, ligatures, remaining interpunction, line breaks, capital letters to small ones, equalizes sigma at the end of greek words, and removes brakets
 function delall( text ){
     if( doUVlatin ){ // convert u to v in classical latin text
-        text = delji( deluv( delklammern( sigmaistgleich( delgrkl( delumbrbine( delligaturen( delinterp( delmakup( delnumbering( delunknown( deldiak(  text))))))))))));
+        text = delji( deluv( delklammern( sigmaistgleich( iotasubiotoad( delgrkl( delumbrbine( delligaturen( delinterp( delmakup( delnumbering( delunknown( deldiak(  text)))))))))))));
     } else {
-        text = delklammern( sigmaistgleich( delgrkl( delumbrbine( delligaturen( delinterp( delmakup( delnumbering( delunknown( deldiak(  text  ) ) ) ) ) ) ) ) ) );
+        text = delklammern( sigmaistgleich( iotasubiotoad( delgrkl( delumbrbine( delligaturen( delinterp( delmakup( delnumbering( delunknown( deldiak(  text  ) ) ) ) ) ) ) ) ) ) );
     }
     return text;
 }
@@ -819,6 +819,7 @@ function delligaturen( text ){
 
 // function takes string and splits it into words, than normalizes each word, joins the string again
 function deldiak( text ){
+    //console.log(text);
     let spt = text.split( " " ); //seperate words
     const lele = spt.length;
     for( let wi = 0; wi < lele; wi++ ){
@@ -834,13 +835,13 @@ function delinterp( text ){
 
 // function takes a string and replaces some unknown signs
 function delunknown( text ){
-    return text.replace(regU1, "").replace(regU2, "").replace(regU3, "").replace(regU4, "");
+    return text.replace(regU1, "").replace(regU2, "").replace(regU3, "").replace(regU4, "").replace(regU5, "").replace(regU6, "");
 }
 
 
 // function takes string and replace html line breakes
 function delumbrbine( text ){
-    return text.replace(regEbr1, "").replace(regEbr2, "");
+    return text.replace(cleanNEWL, "").replace(cleanRETL, "").replace(regEbr1, "").replace(regEbr2, "");
 }
 
 function umbrtospace( text ){
@@ -852,8 +853,8 @@ function umbrtospace( text ){
 }
 
 //more to come
-function delmakup( text ){ 
-    return text.replace(cleanhtmltags, "").replace(cleanhtmlformat1, "");
+function delmakup( text ){
+    return text.replace(regEbr2,"\n").replace(regEbr1,"\n").replace(reglb,"\n").replace(cleanhtmltags, "").replace(cleanhtmlformat1, "");
 }
 
 function makuptoleer( text ){ 
@@ -870,16 +871,6 @@ function sigmaistgleich( text ){
     return text.replace(regEtailingsig, "σ");
 }
 
-// function takes string and converts ä Ä ü Ü ö Ö
-const regae = new RegExp( 'ä', 'g' );
-const regAE = new RegExp( 'Ä', 'g' );
-const regoe = new RegExp( 'ö', 'g' );
-const regOE = new RegExp( 'Ö', 'g' );
-const regue = new RegExp( 'ü', 'g' );
-const regUE = new RegExp( 'Ü', 'g' );
-function convumlau( text ){
-    return text.replace(regae, "ae").replace(regAE, "Ae").replace(regoe, "oe").replace(regOE, "Oe").replace(regue, "ue").replace(regUE, "Ue");
-}
 
 // function take sstring and replaces the brakets -- do not run this before the Klammersystem fkt
 function delklammern( text ){
@@ -989,7 +980,7 @@ function iotasubiotoadL( wliste ){
 
 //function to use with greek text maybe
 function GRvorbereitungT( dtext ){
-	let diewo =  disambiguDIAkritika( delnumbering(dtext).normalize( analysisNormalform ).toLowerCase() ).split( " " );
+	let diewo =  disambiguadashes( disambiguDIAkritika( delnumbering(dtext).normalize( analysisNormalform ).toLowerCase() )).split( " " );
 		//diewo = iotasubiotoadL( diewo );
 		diewo = UmbruchzuLeerzeichen( Trennstricheraus( diewo ).join( " " ) ).split( " " );
 		diewo = Interpunktiongetrennt( diewo );
@@ -1000,6 +991,36 @@ function GRvorbereitungT( dtext ){
 const unterPu = new RegExp( "◌̣ ", 'g' )
 function delUnterpunkt( text ){
     return text.replace( unterPu, "" );
+}
+
+//******************************************************************************
+// Section 3: masking: build, apply stop word list
+//******************************************************************************
+
+function buildstopwordlistfromstring( str ){ //words separated with two semicolon ;;
+    str = normatext( str, analysisNormalform );
+    let wds = str.split( ";;" );
+    let swl = {};
+    for( let w = 0; w < wds.length; w += 1 ){
+        swl[ wds[w] ] = 1;
+    }
+    swl = normarrayk(swl);
+    return swl;
+}
+
+function maskwithstopwlist( stwl, str ){
+    //same unicode keys and str
+    str = normatext( str, analysisNormalform );
+    let wds = str.split( " " );
+    let newstr = [];
+    for(let w = 0; w < wds.length; w += 1 ){
+        if( !stwl[ wds[w] ] ){
+            newstr.push( wds[w] );
+        } else {
+            console.log(wds[w])
+        }
+    } 
+    return newstr.join( " " );
 }
 
 //******************************************************************************
@@ -1087,7 +1108,7 @@ function demUsage( atesttext ){
     atttext = atttext + "<br/><br/>"+ desnumb +"<br/>"+ numb;
     
     let unk = delunknown( testnorm );
-    let desunk = "<b>k) Text output without some signs (delete some to the programmer unknown signs: †, *,⋖,#):</b>" ;
+    let desunk = "<b>k) Text output without some signs (delete some to the programmer unknown signs: †, *,⋖,#, §):</b>" ;
     //console.log( desunk );
     //console.log( unk );
     atttext = atttext + "<br/><br/>"+ desunk +"<br/>"+ unk;
