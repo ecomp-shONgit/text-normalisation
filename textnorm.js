@@ -267,7 +267,8 @@ const grnum = {//not perfect
 "ρ" : 1
 };
 //regexp section
-const cleanhtmltags = new RegExp( '<(?:.|[\n\s\t\.\:])*?>', 'g' );
+//const cleanhtmltags = new RegExp( '<(?:.|[\n\s\t\.\:])*?>', 'g' );
+const cleanhtmltags = new RegExp('<[^>]*>', 'g' );
 const cleanhtmlformat1 = new RegExp( '&nbsp;', 'g' );
 const regEbr1 = new RegExp( '<br/>', 'g' ); 
 const regEbr2 = new RegExp( '<br>', 'g' );
@@ -318,6 +319,9 @@ const diacriticsunicodeRegExp = new Array(
     new RegExp( '´', 'g' ),
     new RegExp( "‘", 'g' )
 );
+const alldiamodern = new RegExp( '[\u0300-\u036f]', 'g' );
+const alldiamodern2 = new RegExp( '\p{Diacritic}', 'g' );
+
 const regJotaSub = new RegExp( '\u{0345}', 'g' );
 // precompiled regular expressions
 /*const strClean1 = new RegExp( '’', 'g' );
@@ -365,6 +369,7 @@ const regU6 = new RegExp( "⁑", 'g');
 const regEtailingsig = new RegExp( "ς", 'g' );
 
 const regEuv = new RegExp( "u", 'g' );
+const regEvu = new RegExp( "v", 'g' );
 const regEji = new RegExp( "j", 'g' );
 
 const regEkla1 = new RegExp( /\(/, 'g' );
@@ -478,9 +483,10 @@ function sameallspacing( astr ){
 }
 
 function disambiguDIAkritika( astr ){
-    astr = astr.split( "\u0027" ).join( "\u2019" ); //typogra korrektes postroph;
+    astr = astr.split( "\u0027" ).join( "\u2019" ); //typogra korrektes apostroph;
     astr = astr.split( "'" ).join( "\u2019" );
     astr = astr.split( "\u1FBD" ).join( "\u2019" );
+    //console.log(astr);
     return astr;
 }
 
@@ -828,6 +834,11 @@ function deldiak( text ){
     return  spt.join( " " );
 }    
 
+// function deleates EVERYTHING in the unicode Character class DIACRITICS
+function unicodediacriticsremove( str ){ //on NFD and NFKD strings!!!
+     return str.replace( alldiamodern, "");
+}
+
 // function takes a string and replaces interpunction
 function delinterp( text ){
     return text.replace(regEdoppelP, "").replace(regEeinfahP, "").replace(regEkomma, "").replace(regEsemiK, "").replace(regEhochP, "").replace(regEausr, "").replace(regEfarge, "").replace(regEan1, "").replace(regEan2, "").replace(regEan3, "").replace(regEan4, "").replace(regEan5, "").replace(regEan6, "");
@@ -841,7 +852,7 @@ function delunknown( text ){
 
 // function takes string and replace html line breakes
 function delumbrbine( text ){
-    return text.replace(cleanNEWL, "").replace(cleanRETL, "").replace(regEbr1, "").replace(regEbr2, "");
+    return text.replace( "  ", " " ).replace(cleanNEWL, " ").replace(cleanRETL, " ").replace(regEbr1, " ").replace(regEbr2, " ");
 }
 
 function umbrtospace( text ){
@@ -853,8 +864,35 @@ function umbrtospace( text ){
 }
 
 //more to come
+function delma(text){
+    if( text.indexOf( "<body>" ) != -1 ){
+        text = text.split( "<body>" )[1];
+    }
+    return text.replace(regEbr2,"\n").replace(regEbr1,"\n").replace(reglb,"\n").replace(cleanhtmltags, "").replace(cleanhtmlformat1, "");   
+}
 function delmakup( text ){
-    return text.replace(regEbr2,"\n").replace(regEbr1,"\n").replace(reglb,"\n").replace(cleanhtmltags, "").replace(cleanhtmlformat1, "");
+    try{
+        let parser = new DOMParser(); //if dom parser fails - mal formed xml/html, than use fallback
+        let doc = parser.parseFromString( text, "text/xml" ); //xml = html?
+        
+        if( parser != undefined && doc.getElementsByTagName("body").length > 0 ){
+            //console.log("------xml parser", doc.getElementsByTagName("body").textContent);
+            const inneertext = doc.getElementsByTagName("body").item(0).textContent;
+            if( inneertext.indexOf("error") !== -1 || inneertext== "" ){ //error in parsed document
+                //console.log("parser but error")
+                return delma(text);
+            } else {
+                //console.log(inneertext)
+                return inneertext;
+            }
+        } else { // if parser is null
+            //console.log(text.replace(cleanhtmltags, ""))
+            return delma(text);
+        }
+    } catch( e ){ //fallback - needed???
+        //console.log("no parser solution");
+        return delma(text);
+    }
 }
 
 function makuptoleer( text ){ 
@@ -883,7 +921,8 @@ function deledklammern( text ){
 // function takes string and replaces u by v, used in classical latin texts
 function deluv( text ){
     //console.log(text);
-    return text.replace( regEuv, "v" );
+    //return text.replace( regEuv, "v" );
+    return text.replace( regEvu, "u" );
 }
 
 function delji( text ){
@@ -1016,9 +1055,24 @@ function maskwithstopwlist( stwl, str ){
     for(let w = 0; w < wds.length; w += 1 ){
         if( !stwl[ wds[w] ] ){
             newstr.push( wds[w] );
-        } else {
-            console.log(wds[w])
-        }
+        } //else {
+            //console.log(wds[w])
+        //}
+    } 
+    return newstr.join( " " );
+}
+
+function maskwithINVstopwlist( stwl, str ){
+    //same unicode keys and str
+    str = normatext( str, analysisNormalform );
+    let wds = str.split( " " );
+    let newstr = [];
+    for(let w = 0; w < wds.length; w += 1 ){
+        if( stwl[ wds[w] ] ){
+            newstr.push( wds[w] );
+        } //else {
+           // console.log(w, wds[w])
+        //}
     } 
     return newstr.join( " " );
 }
